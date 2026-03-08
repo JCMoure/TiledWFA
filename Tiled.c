@@ -1,8 +1,9 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <ctype.h>
 
-#define MAX_LONG 100
+#define MAX_LONG 1000
 #define MATCH 0
 #define MISMATCH 1
 #define GAP 1
@@ -28,6 +29,99 @@ int obtener_puntuacion(char a, char b) {
         return MISMATCH;
     }
 }
+
+static FILE *archivo_input = NULL;
+static int archivo_abierto = 0;
+
+// Función para validar secuencia de ADN
+int es_secuencia_valida(const char *linea, char *secuencia) {
+    char temp[MAX_LONG];
+    strcpy(temp, linea);
+    
+    // Eliminar salto de línea y espacios
+    temp[strcspn(temp, "\n")] = 0;
+    char *start = temp;
+    while (isspace(*start)) start++;
+    
+    if (strlen(start) == 0) return 0;
+    
+    // Validar caracteres
+    for (int i = 0; start[i]; i++) {
+        char c = tolower(start[i]);
+        if (c != 'a' && c != 'c' && c != 'g' && c != 't') {
+            return 0;
+        }
+    }
+    
+    strcpy(secuencia, start);
+    return 1;
+}
+
+// Abrir archivo (llamar antes de empezar a leer)
+int abrir_archivo_secuencias() {
+    if (archivo_abierto) {
+        fclose(archivo_input);
+    }
+    
+    archivo_input = fopen("input.txt", "r");
+    if (archivo_input == NULL) {
+        archivo_abierto = 0;
+        return 0;
+    }
+    
+    archivo_abierto = 1;
+    return 1;
+}
+
+// Cerrar archivo (llamar al terminar)
+void cerrar_archivo_secuencias() {
+    if (archivo_abierto && archivo_input) {
+        fclose(archivo_input);
+        archivo_input = NULL;
+        archivo_abierto = 0;
+    }
+}
+
+// Leer siguiente pareja de secuencias
+// Retorna: 1 si se leyó una pareja válida, 0 si no hay más
+int leer_siguiente_pareja(char *s1, char *s2) {
+    char linea[MAX_LONG];
+    char temp1[MAX_LONG];
+    char temp2[MAX_LONG];
+    
+    // Asegurar que el archivo está abierto
+    if (!archivo_abierto && !abrir_archivo_secuencias()) {
+        return 0;
+    }
+    
+    while (fgets(linea, sizeof(linea), archivo_input)) {
+        // Ignorar comentarios y líneas vacías
+        if (linea[0] == '#' || linea[0] == '\n') {
+            continue;
+        }
+        
+        // Intentar leer primera secuencia
+        if (es_secuencia_valida(linea, temp1)) {
+            // Buscar segunda secuencia
+            while (fgets(linea, sizeof(linea), archivo_input)) {
+                if (linea[0] == '#' || linea[0] == '\n') {
+                    continue;
+                }
+                
+                if (es_secuencia_valida(linea, temp2)) {
+                    strcpy(s1, temp1);
+                    strcpy(s2, temp2);
+                    return 1; // Pareja válida encontrada
+                } else {
+                    break; // Segunda no válida, buscar nueva primera
+                }
+            }
+        }
+    }
+    
+    return 0; // No hay más parejas
+}
+
 
 // Función para mostrar la matriz de costes del alineamiento
 void mostrar_matriz_costes(int matriz[MAX_LONG][MAX_LONG], int len1, int len2, 
@@ -235,15 +329,14 @@ int main(int argc, char **argv) {
       
     switch(opcion) {
         case 1:
-            // Secuencias de ejemplo
-            strcpy(secuencia1, "actgaccctgactgactg");
-            strcpy(secuencia2, "acgtactgacgtaactg");
-            
-            printf("\nEjemplo 1 - Secuencias idénticas:\n");
-            printf("Seq1: %s\n", secuencia1);
-            printf("Seq2: %s\n", secuencia2);
-            Alineamiento ej1 = alinear_secuencias_con_matriz(secuencia1, secuencia2, 1);
-            mostrar_alineamiento(ej1);
+            abrir_archivo_secuencias();
+            while (leer_siguiente_pareja(secuencia1, secuencia2)) {
+                printf("S1: %s\n", secuencia1);
+                printf("S2: %s\n", secuencia2);
+                Alineamiento resultado = alinear_secuencias_con_matriz(secuencia1, secuencia2, 1);
+                mostrar_alineamiento(resultado);
+            }
+            cerrar_archivo_secuencias();
             break;
         case 2:
             printf("\n¡Bienvenido a la versión Tiled del alineador!\n");
