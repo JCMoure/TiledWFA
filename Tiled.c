@@ -29,14 +29,13 @@ int obtener_puntuacion(char a, char b) {
     }
 }
 
-// Función principal de alineamiento (Needleman-Wunsch)
-Alineamiento alinear_secuencias(char *seq1, char *seq2) {
+// Versión modificada de alinear_secuencias que puede mostrar las matrices (Needleman-Wunsch)
+Alineamiento alinear_secuencias_con_matriz(char *seq1, char *seq2, int mostrar_matriz) {
     int len1 = strlen(seq1);
     int len2 = strlen(seq2);
     
     // Matriz de puntuaciones
     int matriz[MAX_LONG][MAX_LONG];
-
     // Matriz para trazado (0: diagonal, 1: arriba, 2: izquierda)
     int traza[MAX_LONG][MAX_LONG];
     
@@ -51,7 +50,7 @@ Alineamiento alinear_secuencias(char *seq1, char *seq2) {
     
     for (int j = 1; j <= len2; j++) {
         matriz[0][j] = matriz[0][j-1] + GAP;
-        traza[0][j]  = 2; // Viene de izquierda
+        traza[0][j] = 2; // Viene de izquierda
     }
     
     // Llenar la matriz
@@ -61,7 +60,7 @@ Alineamiento alinear_secuencias(char *seq1, char *seq2) {
             int del = matriz[i-1][j] + GAP;     // Gap en seq2
             int ins = matriz[i][j-1] + GAP;     // Gap en seq1
             
-            matriz[i][j] = minimo(match, del, ins);
+            matriz[i][j] = maximo(match, del, ins);
             
             // Guardar dirección para trazado
             if (matriz[i][j] == match) {
@@ -74,7 +73,12 @@ Alineamiento alinear_secuencias(char *seq1, char *seq2) {
         }
     }
     
-    // Trazado para obtener el alineamiento
+    // Mostrar matrices si se solicita
+    if (mostrar_matriz) {
+        mostrar_matriz_costes(matriz, len1, len2, seq1, seq2);
+        mostrar_matriz_con_traza(matriz, traza, len1, len2, seq1, seq2);
+    }
+    
     Alineamiento resultado;
     resultado.puntuacion = matriz[len1][len2];
     
@@ -97,7 +101,7 @@ Alineamiento alinear_secuencias(char *seq1, char *seq2) {
         }
     }
     
-    // Invertir las secuencias (las construimos al revés)
+    // Invertir las secuencias
     resultado.seq1_alineada[pos1] = '\0';
     resultado.seq2_alineada[pos2] = '\0';
     
@@ -172,22 +176,73 @@ void mostrar_alineamiento(Alineamiento alineamiento) {
     }
 }
 
-// Función para limpiar el buffer de entrada
-void limpiar_buffer() {
-    int c;
-    while ((c = getchar()) != '\n' && c != EOF);
+void mostrar_matriz_con_traza(int matriz[MAX_LONG][MAX_LONG], 
+                              int traza[MAX_LONG][MAX_LONG], 
+                              int len1, int len2, char *seq1, char *seq2) {
+    printf("\n=== MATRIZ DE COSTES CON TRAZADO ===\n");
+    printf("Filas: Secuencia 1 (%s)\n", seq1);
+    printf("Columnas: Secuencia 2 (%s)\n", seq2);
+    printf("Formato: [coste|dirección] (←:izquierda, ↑:arriba, ↖:diagonal)\n\n");
+    
+    // Imprimir encabezado de columnas
+    printf("        ");  // Espacio para la esquina
+    printf("   -    ");  // Gap inicial
+    for (int j = 0; j < len2; j++) {
+        printf("   %c    ", seq2[j]);
+    }
+    printf("\n");
+    
+    // Imprimir línea separadora
+    printf("  ");
+    for (int j = 0; j <= len2 + 1; j++) {
+        printf("--------");
+    }
+    printf("\n");
+    
+    // Imprimir cada fila
+    for (int i = 0; i <= len1; i++) {
+        // Encabezado de fila
+        if (i == 0) {
+            printf("- |");  // Gap inicial
+        } else {
+            printf("%c |", seq1[i-1]);
+        }
+        
+        // Imprimir valores con dirección
+        for (int j = 0; j <= len2; j++) {
+            char direccion;
+            if (i == 0 && j == 0) {
+                direccion = '*';  // Punto de inicio
+            } else if (traza[i][j] == 0) {
+                direccion = '↖';  // Diagonal
+            } else if (traza[i][j] == 1) {
+                direccion = '↑';  // Arriba
+            } else {
+                direccion = '←';  // Izquierda
+            }
+            printf(" %3d %c ", matriz[i][j], direccion);
+        }
+        printf("\n");
+        
+        // Línea separadora
+        printf("  |");
+        for (int j = 0; j <= len2; j++) {
+            printf("--------");
+        }
+        printf("\n");
+    }
+    printf("\n");
 }
 
 int main(int argc, char **argv) {
     char secuencia1[MAX_LONG];
     char secuencia2[MAX_LONG];
-    int  opcion= 0;
-    int  N= 100000;
+    int  opcion = 1;
+    int  N      = 100000;
 
     if (argc>1) { opcion = atoi(argv[1]); } // get  first command line parameter
-    if (argc>2) { N = atoi(argv[2]); } // get second command line parameter
+    if (argc>2) { N      = atoi(argv[2]); } // get second command line parameter
       
-    limpiar_buffer();      
     switch(opcion) {
         case 1:
             // Secuencias de ejemplo
@@ -197,7 +252,7 @@ int main(int argc, char **argv) {
             printf("\nEjemplo 1 - Secuencias idénticas:\n");
             printf("Seq1: %s\n", secuencia1);
             printf("Seq2: %s\n", secuencia2);
-            Alineamiento ej1 = alinear_secuencias(secuencia1, secuencia2);
+            Alineamiento ej1 = alinear_secuencias_con_matriz(secuencia1, secuencia2, true);
             mostrar_alineamiento(ej1);
             
             // Segundo ejemplo
@@ -207,7 +262,7 @@ int main(int argc, char **argv) {
             printf("\n\nEjemplo 2 - Secuencias con diferencias:\n");
             printf("Seq1: %s\n", secuencia1);
             printf("Seq2: %s\n", secuencia2);
-            Alineamiento ej2 = alinear_secuencias(secuencia1, secuencia2);
+            Alineamiento ej2 = alinear_secuencias_con_matriz(secuencia1, secuencia2, true);
             mostrar_alineamiento(ej2);
             break;
         case 2:
