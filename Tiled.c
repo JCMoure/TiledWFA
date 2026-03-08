@@ -60,7 +60,7 @@ Alineamiento alinear_secuencias_con_matriz(char *seq1, char *seq2, int mostrar_m
             int del = matriz[i-1][j] + GAP;     // Gap en seq2
             int ins = matriz[i][j-1] + GAP;     // Gap en seq1
             
-            matriz[i][j] = maximo(match, del, ins);
+            matriz[i][j] = minimo(match, del, ins);
             
             // Guardar dirección para trazado
             if (matriz[i][j] == match) {
@@ -75,7 +75,6 @@ Alineamiento alinear_secuencias_con_matriz(char *seq1, char *seq2, int mostrar_m
     
     // Mostrar matrices si se solicita
     if (mostrar_matriz) {
-        mostrar_matriz_costes(matriz, len1, len2, seq1, seq2);
         mostrar_matriz_con_traza(matriz, traza, len1, len2, seq1, seq2);
     }
     
@@ -119,61 +118,6 @@ Alineamiento alinear_secuencias_con_matriz(char *seq1, char *seq2, int mostrar_m
     }
     
     return resultado;
-}
-
-// Función para mostrar el alineamiento de forma visual
-void mostrar_alineamiento(Alineamiento alineamiento) {
-    int len = strlen(alineamiento.seq1_alineada);
-    
-    printf("\n=== RESULTADO DEL ALINEAMIENTO ===\n");
-    printf("Puntuación total: %d\n\n", alineamiento.puntuacion);
-    
-    // Mostrar secuencia 1
-    printf("Seq1: ");
-    for (int i = 0; i < len; i++) {
-        printf("%c ", alineamiento.seq1_alineada[i]);
-    }
-    printf("\n");
-    
-    // Mostrar indicadores de match/mismatch
-    printf("      ");
-    for (int i = 0; i < len; i++) {
-        if (alineamiento.seq1_alineada[i] == alineamiento.seq2_alineada[i]) {
-            printf("| ");  // Match
-        } else if (alineamiento.seq1_alineada[i] == '-' || 
-                   alineamiento.seq2_alineada[i] == '-') {
-            printf("  ");  // Gap
-        } else {
-            printf("* ");  // Mismatch
-        }
-    }
-    printf("\n");
-    
-    // Mostrar secuencia 2
-    printf("Seq2: ");
-    for (int i = 0; i < len; i++) {
-        printf("%c ", alineamiento.seq2_alineada[i]);
-    }
-    printf("\n");
-    
-    // Calcular y mostrar porcentaje de identidad
-    int matches = 0;
-    int total = 0;
-    for (int i = 0; i < len; i++) {
-        if (alineamiento.seq1_alineada[i] != '-' && 
-            alineamiento.seq2_alineada[i] != '-') {
-            total++;
-            if (alineamiento.seq1_alineada[i] == alineamiento.seq2_alineada[i]) {
-                matches++;
-            }
-        }
-    }
-    
-    if (total > 0) {
-        float identidad = (float)matches / total * 100;
-        printf("\nIdentidad: %.1f%% (%d/%d posiciones coincidentes)\n", 
-               identidad, matches, total);
-    }
 }
 
 void mostrar_matriz_con_traza(int matriz[MAX_LONG][MAX_LONG], 
@@ -234,6 +178,61 @@ void mostrar_matriz_con_traza(int matriz[MAX_LONG][MAX_LONG],
     printf("\n");
 }
 
+// Función para mostrar el alineamiento de forma visual
+void mostrar_alineamiento(Alineamiento alineamiento) {
+    int len = strlen(alineamiento.seq1_alineada);
+    
+    printf("\n=== RESULTADO DEL ALINEAMIENTO ===\n");
+    printf("Puntuación total: %d\n\n", alineamiento.puntuacion);
+    
+    // Mostrar secuencia 1
+    printf("Seq1: ");
+    for (int i = 0; i < len; i++) {
+        printf("%c ", alineamiento.seq1_alineada[i]);
+    }
+    printf("\n");
+    
+    // Mostrar indicadores de match/mismatch
+    printf("      ");
+    for (int i = 0; i < len; i++) {
+        if (alineamiento.seq1_alineada[i] == alineamiento.seq2_alineada[i]) {
+            printf("| ");  // Match
+        } else if (alineamiento.seq1_alineada[i] == '-' || 
+                   alineamiento.seq2_alineada[i] == '-') {
+            printf("  ");  // Gap
+        } else {
+            printf("* ");  // Mismatch
+        }
+    }
+    printf("\n");
+    
+    // Mostrar secuencia 2
+    printf("Seq2: ");
+    for (int i = 0; i < len; i++) {
+        printf("%c ", alineamiento.seq2_alineada[i]);
+    }
+    printf("\n");
+    
+    // Calcular y mostrar porcentaje de identidad
+    int matches = 0;
+    int total = 0;
+    for (int i = 0; i < len; i++) {
+        if (alineamiento.seq1_alineada[i] != '-' && 
+            alineamiento.seq2_alineada[i] != '-') {
+            total++;
+            if (alineamiento.seq1_alineada[i] == alineamiento.seq2_alineada[i]) {
+                matches++;
+            }
+        }
+    }
+    
+    if (total > 0) {
+        float identidad = (float)matches / total * 100;
+        printf("\nIdentidad: %.1f%% (%d/%d posiciones coincidentes)\n", 
+               identidad, matches, total);
+    }
+}
+
 int main(int argc, char **argv) {
     char secuencia1[MAX_LONG];
     char secuencia2[MAX_LONG];
@@ -252,7 +251,7 @@ int main(int argc, char **argv) {
             printf("\nEjemplo 1 - Secuencias idénticas:\n");
             printf("Seq1: %s\n", secuencia1);
             printf("Seq2: %s\n", secuencia2);
-            Alineamiento ej1 = alinear_secuencias_con_matriz(secuencia1, secuencia2, true);
+            Alineamiento ej1 = alinear_secuencias_con_matriz(secuencia1, secuencia2, 1);
             mostrar_alineamiento(ej1);
             
             // Segundo ejemplo
