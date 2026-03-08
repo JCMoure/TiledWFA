@@ -261,7 +261,7 @@ int main(int argc, char **argv) {
             printf("\n\nEjemplo 2 - Secuencias con diferencias:\n");
             printf("Seq1: %s\n", secuencia1);
             printf("Seq2: %s\n", secuencia2);
-            Alineamiento ej2 = alinear_secuencias_con_matriz(secuencia1, secuencia2, true);
+            Alineamiento ej2 = alinear_secuencias_con_matriz(secuencia1, secuencia2, 1);
             mostrar_alineamiento(ej2);
             break;
         case 2:
