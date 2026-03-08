@@ -38,7 +38,7 @@ void mostrar_matriz_costes(int matriz[MAX_LONG][MAX_LONG], int len1, int len2,
     
     // Imprimir encabezado de columnas (secuencia 2)
     printf("      ");  // Espacio para la esquina superior izquierda
-    printf("  -  ");   // Gap inicial (columna 0)
+    printf("-  ");   // Gap inicial (columna 0)
     for (int j = 0; j < len2; j++) {
         printf("  %c  ", seq2[j]);
     }
@@ -236,24 +236,14 @@ int main(int argc, char **argv) {
     switch(opcion) {
         case 1:
             // Secuencias de ejemplo
-            strcpy(secuencia1, "actgacacgtac");
-            strcpy(secuencia2, "actgacacgtac");
+            strcpy(secuencia1, "actgaccctgactgactg");
+            strcpy(secuencia2, "acgtactgacgtaactg");
             
             printf("\nEjemplo 1 - Secuencias idénticas:\n");
             printf("Seq1: %s\n", secuencia1);
             printf("Seq2: %s\n", secuencia2);
             Alineamiento ej1 = alinear_secuencias_con_matriz(secuencia1, secuencia2, 1);
             mostrar_alineamiento(ej1);
-            
-            // Segundo ejemplo
-            strcpy(secuencia1, "actgactgactgactg");
-            strcpy(secuencia2, "acgtactgacgtactg");
-            
-            printf("\n\nEjemplo 2 - Secuencias con diferencias:\n");
-            printf("Seq1: %s\n", secuencia1);
-            printf("Seq2: %s\n", secuencia2);
-            Alineamiento ej2 = alinear_secuencias_con_matriz(secuencia1, secuencia2, 1);
-            mostrar_alineamiento(ej2);
             break;
         case 2:
             printf("\n¡Bienvenido a la versión Tiled del alineador!\n");
