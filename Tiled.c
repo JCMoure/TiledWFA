@@ -198,15 +198,11 @@ int main() {
     char secuencia1[MAX_LONG];
     char secuencia2[MAX_LONG];
     int opcion;
-    
-    printf("========================================\n");
-    printf("   ALINEADOR DE SECUENCIAS DE ADN v1.0\n");
-    printf("========================================\n\n");
-    
+      
     do {
         printf("\n--- MENÚ PRINCIPAL ---\n");
-        printf("1. Ingresar secuencias manualmente\n");
-        printf("2. Usar secuencias de ejemplo\n");
+        printf("1. Usar secuencias de ejemplo\n");
+        printf("2. Tiled Version\n");
         printf("3. Salir\n");
         printf("Selecciona una opción: ");
         
@@ -215,38 +211,6 @@ int main() {
         
         switch(opcion) {
             case 1:
-                // Ingresar primera secuencia
-                do {
-                    printf("\nIngresa la primera secuencia (solo a,c,g,t): ");
-                    fgets(secuencia1, MAX_LONG, stdin);
-                    secuencia1[strcspn(secuencia1, "\n")] = 0; // Eliminar salto de línea
-                    
-                    if (!validar_secuencia(secuencia1)) {
-                        printf("Error: La secuencia contiene caracteres no válidos.\n");
-                    }
-                } while (!validar_secuencia(secuencia1));
-                
-                // Ingresar segunda secuencia
-                do {
-                    printf("Ingresa la segunda secuencia (solo a,c,g,t): ");
-                    fgets(secuencia2, MAX_LONG, stdin);
-                    secuencia2[strcspn(secuencia2, "\n")] = 0;
-                    
-                    if (!validar_secuencia(secuencia2)) {
-                        printf("Error: La secuencia contiene caracteres no válidos.\n");
-                    }
-                } while (!validar_secuencia(secuencia2));
-                
-                printf("\nSecuencias ingresadas:");
-                printf("\nSeq1 (%d): %s", strlen(secuencia1), secuencia1);
-                printf("\nSeq2 (%d): %s\n", strlen(secuencia2), secuencia2);
-                
-                // Realizar alineamiento
-                Alineamiento resultado = alinear_secuencias(secuencia1, secuencia2);
-                mostrar_alineamiento(resultado);
-                break;
-                
-            case 2:
                 // Secuencias de ejemplo
                 strcpy(secuencia1, "actgac");
                 strcpy(secuencia2, "actgac");
@@ -267,13 +231,16 @@ int main() {
                 Alineamiento ej2 = alinear_secuencias(secuencia1, secuencia2);
                 mostrar_alineamiento(ej2);
                 break;
-                
+            case 2:
+                printf("\n¡Bienvenido a la versión Tiled del alineador!\n");
+                printf("Esta versión está en desarrollo y se lanzará próximamente.\n");
+                break;                
             case 3:
-                printf("\n¡Gracias por usar el alineador!\n");
+                printf("\nExit\n");
                 break;
                 
             default:
-                printf("\nOpción no válida. Intenta de nuevo.\n");
+                printf("\nNot Valid\n");
         }
         
     } while (opcion != 3);
