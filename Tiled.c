@@ -29,60 +29,51 @@ int obtener_puntuacion(char a, char b) {
     }
 }
 
-void mostrar_matriz_con_traza(int matriz[MAX_LONG][MAX_LONG], 
-                              int traza[MAX_LONG][MAX_LONG], 
-                              int len1, int len2, char *seq1, char *seq2) {
-    printf("\n=== MATRIZ DE COSTES CON TRAZADO ===\n");
+// Función para mostrar la matriz de costes del alineamiento
+void mostrar_matriz_costes(int matriz[MAX_LONG][MAX_LONG], int len1, int len2, 
+                          char *seq1, char *seq2) {
+    printf("\n=== MATRIZ DE COSTES ===\n");
     printf("Filas: Secuencia 1 (%s)\n", seq1);
-    printf("Columnas: Secuencia 2 (%s)\n", seq2);
-    printf("Formato: [coste|dirección] (←:izquierda, ↑:arriba, ↖:diagonal)\n\n");
+    printf("Columnas: Secuencia 2 (%s)\n\n", seq2);
     
-    // Imprimir encabezado de columnas
-    printf("        ");  // Espacio para la esquina
-    printf("   -    ");  // Gap inicial
+    // Imprimir encabezado de columnas (secuencia 2)
+    printf("      ");  // Espacio para la esquina superior izquierda
+    printf("  -  ");   // Gap inicial (columna 0)
     for (int j = 0; j < len2; j++) {
-        printf("   %c    ", seq2[j]);
+        printf("  %c  ", seq2[j]);
     }
     printf("\n");
     
     // Imprimir línea separadora
     printf("  ");
     for (int j = 0; j <= len2 + 1; j++) {
-        printf("--------");
+        printf("-----");
     }
     printf("\n");
     
-    // Imprimir cada fila
+    // Imprimir cada fila con su encabezado (secuencia 1)
     for (int i = 0; i <= len1; i++) {
         // Encabezado de fila
         if (i == 0) {
-            printf("- |");  // Gap inicial
+            printf("- |");  // Gap inicial (fila 0)
         } else {
-            printf("%c |", seq1[i-1]);
+            printf("%c |", seq1[i-1]);  // Carácter de la secuencia 1
         }
         
-        // Imprimir valores con dirección
+        // Imprimir valores de la matriz
         for (int j = 0; j <= len2; j++) {
-            char direccion;
-            if (i == 0 && j == 0) {
-                direccion = '*';  // Punto de inicio
-            } else if (traza[i][j] == 0) {
-                direccion = '↖';  // Diagonal
-            } else if (traza[i][j] == 1) {
-                direccion = '↑';  // Arriba
-            } else {
-                direccion = '←';  // Izquierda
+            printf(" %3d ", matriz[i][j]);
+        }
+        printf("\n");
+        
+        // Línea separadora opcional para mejor legibilidad
+        if (i < len1) {
+            printf("  |");
+            for (int j = 0; j <= len2; j++) {
+                printf("-----");
             }
-            printf(" %3d %c ", matriz[i][j], direccion);
+            printf("\n");
         }
-        printf("\n");
-        
-        // Línea separadora
-        printf("  |");
-        for (int j = 0; j <= len2; j++) {
-            printf("--------");
-        }
-        printf("\n");
     }
     printf("\n");
 }
@@ -133,7 +124,7 @@ Alineamiento alinear_secuencias_con_matriz(char *seq1, char *seq2, int mostrar_m
     
     // Mostrar matrices si se solicita
     if (mostrar_matriz) {
-        mostrar_matriz_con_traza(matriz, traza, len1, len2, seq1, seq2);
+        mostrar_matriz_costes(matriz, len1, len2, seq1, seq2);
     }
     
     Alineamiento resultado;
