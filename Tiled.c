@@ -8,7 +8,6 @@
 #define MISMATCH 3
 #define GAP 2
 
-// Estructura para almacenar el resultado del alineamiento
 typedef struct {
     char seq1_alineada[MAX_LONG * 2];
     char seq2_alineada[MAX_LONG * 2];
@@ -121,7 +120,6 @@ int leer_siguiente_pareja(char *s1, char *s2) {
     
     return 0; // No hay más parejas
 }
-
 
 // Función para mostrar la matriz de costes del alineamiento
 void mostrar_matriz_costes(int matriz[MAX_LONG][MAX_LONG], int len1, int len2, 
