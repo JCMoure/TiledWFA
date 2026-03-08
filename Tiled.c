@@ -3,9 +3,9 @@
 #include <stdlib.h>
 
 #define MAX_LONG 100
-#define MATCH 2
-#define MISMATCH -1
-#define GAP -2
+#define MATCH 0
+#define MISMATCH 1
+#define GAP 1
 
 // Estructura para almacenar el resultado del alineamiento
 typedef struct {
@@ -14,20 +14,14 @@ typedef struct {
     int puntuacion;
 } Alineamiento;
 
-// Función para calcular el máximo de tres números
-int maximo(int a, int b, int c) {
-    int max = a;
-    if (b > max) max = b;
-    if (c > max) max = c;
-    return max;
+int minimo(int a, int b, int c) {
+    int min = a;
+    if (b < min) min = b;
+    if (c < min) min = c;
+    return min;
 }
 
-// Función para obtener la puntuación de match/mismatch
-int obtener_puntuacion(char a, char b) {
-    // Convertir a minúsculas para comparación
-    a = tolower(a);
-    b = tolower(b);
-    
+int obtener_puntuacion(char a, char b) {    
     if (a == b) {
         return MATCH;
     } else {
@@ -42,6 +36,7 @@ Alineamiento alinear_secuencias(char *seq1, char *seq2) {
     
     // Matriz de puntuaciones
     int matriz[MAX_LONG][MAX_LONG];
+
     // Matriz para trazado (0: diagonal, 1: arriba, 2: izquierda)
     int traza[MAX_LONG][MAX_LONG];
     
@@ -56,7 +51,7 @@ Alineamiento alinear_secuencias(char *seq1, char *seq2) {
     
     for (int j = 1; j <= len2; j++) {
         matriz[0][j] = matriz[0][j-1] + GAP;
-        traza[0][j] = 2; // Viene de izquierda
+        traza[0][j]  = 2; // Viene de izquierda
     }
     
     // Llenar la matriz
@@ -66,7 +61,7 @@ Alineamiento alinear_secuencias(char *seq1, char *seq2) {
             int del = matriz[i-1][j] + GAP;     // Gap en seq2
             int ins = matriz[i][j-1] + GAP;     // Gap en seq1
             
-            matriz[i][j] = maximo(match, del, ins);
+            matriz[i][j] = minimo(match, del, ins);
             
             // Guardar dirección para trazado
             if (matriz[i][j] == match) {
@@ -177,73 +172,54 @@ void mostrar_alineamiento(Alineamiento alineamiento) {
     }
 }
 
-// Función para validar secuencias de ADN
-int validar_secuencia(char *secuencia) {
-    for (int i = 0; i < strlen(secuencia); i++) {
-        char c = tolower(secuencia[i]);
-        if (c != 'a' && c != 'c' && c != 'g' && c != 't') {
-            return 0; // Carácter no válido
-        }
-    }
-    return 1; // Secuencia válida
-}
-
 // Función para limpiar el buffer de entrada
 void limpiar_buffer() {
     int c;
     while ((c = getchar()) != '\n' && c != EOF);
 }
 
-int main() {
+int main(int argc, char **argv) {
     char secuencia1[MAX_LONG];
     char secuencia2[MAX_LONG];
-    int opcion;
+    int  opcion= 0;
+    int  N= 100000;
+
+    if (argc>1) { opcion = atoi(argv[1]); } // get  first command line parameter
+    if (argc>2) { N = atoi(argv[2]); } // get second command line parameter
       
-    do {
-        printf("\n--- MENÚ PRINCIPAL ---\n");
-        printf("1. Usar secuencias de ejemplo\n");
-        printf("2. Tiled Version\n");
-        printf("3. Salir\n");
-        printf("Selecciona una opción: ");
-        
-        scanf("%d", &opcion);
-        limpiar_buffer();
-        
-        switch(opcion) {
-            case 1:
-                // Secuencias de ejemplo
-                strcpy(secuencia1, "actgac");
-                strcpy(secuencia2, "actgac");
-                
-                printf("\nEjemplo 1 - Secuencias idénticas:\n");
-                printf("Seq1: %s\n", secuencia1);
-                printf("Seq2: %s\n", secuencia2);
-                Alineamiento ej1 = alinear_secuencias(secuencia1, secuencia2);
-                mostrar_alineamiento(ej1);
-                
-                // Segundo ejemplo
-                strcpy(secuencia1, "actg");
-                strcpy(secuencia2, "acgt");
-                
-                printf("\n\nEjemplo 2 - Secuencias con diferencias:\n");
-                printf("Seq1: %s\n", secuencia1);
-                printf("Seq2: %s\n", secuencia2);
-                Alineamiento ej2 = alinear_secuencias(secuencia1, secuencia2);
-                mostrar_alineamiento(ej2);
-                break;
-            case 2:
-                printf("\n¡Bienvenido a la versión Tiled del alineador!\n");
-                printf("Esta versión está en desarrollo y se lanzará próximamente.\n");
-                break;                
-            case 3:
-                printf("\nExit\n");
-                break;
-                
-            default:
-                printf("\nNot Valid\n");
-        }
-        
-    } while (opcion != 3);
-    
+    limpiar_buffer();      
+    switch(opcion) {
+        case 1:
+            // Secuencias de ejemplo
+            strcpy(secuencia1, "actgacacgtac");
+            strcpy(secuencia2, "actgacacgtac");
+            
+            printf("\nEjemplo 1 - Secuencias idénticas:\n");
+            printf("Seq1: %s\n", secuencia1);
+            printf("Seq2: %s\n", secuencia2);
+            Alineamiento ej1 = alinear_secuencias(secuencia1, secuencia2);
+            mostrar_alineamiento(ej1);
+            
+            // Segundo ejemplo
+            strcpy(secuencia1, "actgactgactgactg");
+            strcpy(secuencia2, "acgtactgacgtactg");
+            
+            printf("\n\nEjemplo 2 - Secuencias con diferencias:\n");
+            printf("Seq1: %s\n", secuencia1);
+            printf("Seq2: %s\n", secuencia2);
+            Alineamiento ej2 = alinear_secuencias(secuencia1, secuencia2);
+            mostrar_alineamiento(ej2);
+            break;
+        case 2:
+            printf("\n¡Bienvenido a la versión Tiled del alineador!\n");
+            printf("Esta versión está en desarrollo y se lanzará próximamente.\n");
+            break;                
+        case 3:
+            printf("\nExit\n");
+            break;
+            
+        default:
+            printf("\nNot Valid\n");
+    }
     return 0;
 }
