@@ -29,7 +29,65 @@ int obtener_puntuacion(char a, char b) {
     }
 }
 
-// Versión modificada de alinear_secuencias que puede mostrar las matrices (Needleman-Wunsch)
+void mostrar_matriz_con_traza(int matriz[MAX_LONG][MAX_LONG], 
+                              int traza[MAX_LONG][MAX_LONG], 
+                              int len1, int len2, char *seq1, char *seq2) {
+    printf("\n=== MATRIZ DE COSTES CON TRAZADO ===\n");
+    printf("Filas: Secuencia 1 (%s)\n", seq1);
+    printf("Columnas: Secuencia 2 (%s)\n", seq2);
+    printf("Formato: [coste|dirección] (←:izquierda, ↑:arriba, ↖:diagonal)\n\n");
+    
+    // Imprimir encabezado de columnas
+    printf("        ");  // Espacio para la esquina
+    printf("   -    ");  // Gap inicial
+    for (int j = 0; j < len2; j++) {
+        printf("   %c    ", seq2[j]);
+    }
+    printf("\n");
+    
+    // Imprimir línea separadora
+    printf("  ");
+    for (int j = 0; j <= len2 + 1; j++) {
+        printf("--------");
+    }
+    printf("\n");
+    
+    // Imprimir cada fila
+    for (int i = 0; i <= len1; i++) {
+        // Encabezado de fila
+        if (i == 0) {
+            printf("- |");  // Gap inicial
+        } else {
+            printf("%c |", seq1[i-1]);
+        }
+        
+        // Imprimir valores con dirección
+        for (int j = 0; j <= len2; j++) {
+            char direccion;
+            if (i == 0 && j == 0) {
+                direccion = '*';  // Punto de inicio
+            } else if (traza[i][j] == 0) {
+                direccion = '↖';  // Diagonal
+            } else if (traza[i][j] == 1) {
+                direccion = '↑';  // Arriba
+            } else {
+                direccion = '←';  // Izquierda
+            }
+            printf(" %3d %c ", matriz[i][j], direccion);
+        }
+        printf("\n");
+        
+        // Línea separadora
+        printf("  |");
+        for (int j = 0; j <= len2; j++) {
+            printf("--------");
+        }
+        printf("\n");
+    }
+    printf("\n");
+}
+
+// Alinear_secuencias y mostrar  matrices (Needleman-Wunsch)
 Alineamiento alinear_secuencias_con_matriz(char *seq1, char *seq2, int mostrar_matriz) {
     int len1 = strlen(seq1);
     int len2 = strlen(seq2);
@@ -118,64 +176,6 @@ Alineamiento alinear_secuencias_con_matriz(char *seq1, char *seq2, int mostrar_m
     }
     
     return resultado;
-}
-
-void mostrar_matriz_con_traza(int matriz[MAX_LONG][MAX_LONG], 
-                              int traza[MAX_LONG][MAX_LONG], 
-                              int len1, int len2, char *seq1, char *seq2) {
-    printf("\n=== MATRIZ DE COSTES CON TRAZADO ===\n");
-    printf("Filas: Secuencia 1 (%s)\n", seq1);
-    printf("Columnas: Secuencia 2 (%s)\n", seq2);
-    printf("Formato: [coste|dirección] (←:izquierda, ↑:arriba, ↖:diagonal)\n\n");
-    
-    // Imprimir encabezado de columnas
-    printf("        ");  // Espacio para la esquina
-    printf("   -    ");  // Gap inicial
-    for (int j = 0; j < len2; j++) {
-        printf("   %c    ", seq2[j]);
-    }
-    printf("\n");
-    
-    // Imprimir línea separadora
-    printf("  ");
-    for (int j = 0; j <= len2 + 1; j++) {
-        printf("--------");
-    }
-    printf("\n");
-    
-    // Imprimir cada fila
-    for (int i = 0; i <= len1; i++) {
-        // Encabezado de fila
-        if (i == 0) {
-            printf("- |");  // Gap inicial
-        } else {
-            printf("%c |", seq1[i-1]);
-        }
-        
-        // Imprimir valores con dirección
-        for (int j = 0; j <= len2; j++) {
-            char direccion;
-            if (i == 0 && j == 0) {
-                direccion = '*';  // Punto de inicio
-            } else if (traza[i][j] == 0) {
-                direccion = '↖';  // Diagonal
-            } else if (traza[i][j] == 1) {
-                direccion = '↑';  // Arriba
-            } else {
-                direccion = '←';  // Izquierda
-            }
-            printf(" %3d %c ", matriz[i][j], direccion);
-        }
-        printf("\n");
-        
-        // Línea separadora
-        printf("  |");
-        for (int j = 0; j <= len2; j++) {
-            printf("--------");
-        }
-        printf("\n");
-    }
-    printf("\n");
 }
 
 // Función para mostrar el alineamiento de forma visual
