@@ -5,8 +5,8 @@
 
 #define MAX_LONG 1000
 #define MATCH 0
-#define MISMATCH 1
-#define GAP 1
+#define MISMATCH 3
+#define GAP 2
 
 // Estructura para almacenar el resultado del alineamiento
 typedef struct {

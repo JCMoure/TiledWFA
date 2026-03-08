@@ -1,2 +1,2 @@
-actgaccctgactgactg
-acgtactgacgtaactg
+cgactgaccctgactgactatg
+acgtactgaacgtactgacgcgtaactgtaactg
