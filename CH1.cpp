@@ -37,7 +37,7 @@ unsigned Euclides( unsigned a, unsigned b )
 }
 
 
-void Challenge ( unsigned Y, unsigned X, unsigned s )
+void oldChallenge ( unsigned Y, unsigned X, unsigned s )
 {
   unsigned * board = new unsigned[Y*X];  // board matrix of Y*X cells
   unsigned * cost  = new unsigned[Y*X];  // cost matrix
@@ -160,6 +160,82 @@ void Challenge ( unsigned Y, unsigned X, unsigned s )
   delete []cost;
 }
 
+void computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize )
+{
+  unsigned * cost        = new unsigned[Vsize][Wsize];  // cost matrix of Vsize*Wsize elements
+  unsigned * addV        = new unsigned[Vsize];        // array of Vsize elements
+  unsigned * addW        = new unsigned[Wsize];        // array of Vsize elements
+  unsigned * addDiag     = new unsigned[Vsize+Wsize];  // array of Vsize+Wsize elements
+  unsigned * addAntiDiag = new unsigned[Wsize+Vsize];  // array of Wsize+Vsize elements
+
+  for ( int i=0; i < Vsize; i++ )
+    addV[i] = 0;
+
+  for ( int i=0; i < Wsize; i++ )
+    addW[i] = 0;
+
+  for ( int i=0; i < Vsize+Wsize; i++ )
+    addDiag[i] = 0;
+  
+  for ( int i=0; i < Wsize+Vsize; i++ )
+    addAntiDiag[i] = 0;
+  
+  for ( int i=0; i < Vsize; i++ )
+    for ( int j=0; j < Wsize; j++ )
+      cost[i][j] = 0;
+
+  for ( int j=0; j < Wsize; j++ ) {
+    for ( int i=0; i < Vsize; i++ ) {
+      cost[i][j] += V[i]*W[j];
+    }
+  }
+
+  for ( int j=0; j < Wsize; j++ ) {
+    for ( int i=0; i < Vsize; i++ ) {
+      addV[i] += cost[i][j];
+    }
+  }
+
+  for ( int j=0; j < Wsize; j++ ) {
+    for ( int i=0; i < Vsize; i++ ) {
+      addW[j] += cost[i][j];
+    }
+  }
+
+  for ( int j=0; j < Wsize; j++ ) {
+    for ( int i=0; i < Vsize; i++ ) {
+      addDiag[Vsize-(i+1)+j] += cost[i][j];
+    }
+  }
+
+  for ( int j=0; j < Wsize; j++ ) {
+    for ( int i=0; i < Vsize; i++ ) {
+      addAntiDiag[i+j] += cost[i][j];
+    }
+  }
+
+  for ( int i=0; i < Vsize; i++ )
+    addV[i] = minimum(addV[i], addDiag[i], addAntiDiag[i]);
+
+  for ( int j=0; j < Wsize; j++ )
+    addW[j] = minimum(addW[j], addDiag[Vsize+j-1], addAntiDiag[Vsize+j-1]);
+
+   C = 0;
+   for ( int i=0; i < Vsize; i++ )
+    C += addV[i];
+
+  for ( int j=0; j < Wsize; j++ )
+    C += addW[j];
+
+  delete []cost;
+  delete []addV;
+  delete []addW;
+  delete []addDiag;
+  delete []addAntiDiag;
+  return C
+}
+
+
 int main (int argc, char **argv)
 {
   unsigned X=5000000, Y= 50, s=0, REP=5;
@@ -171,11 +247,22 @@ int main (int argc, char **argv)
   if (argc>4) { s   = atoi(argv[4]); }
 
   cout << "********** CHALLENGE # 1 ****************\n";
-  cout << "Input vector size is X=" << X << "; Steps is Y=" << Y << "; Repeat " << REP << " times\n";
+  cout << "Input vector sizes are X=" << X << " and Y=" << Y << "; Repeat " << REP << " times\n";
+
+  unsigned * P = new unsigned[X];
+  unsigned * T = new unsigned[Y];
 
   for (int t=0; t<REP; t++)
   {
-    Challenge ( Y, X, s );
+    init_random(s);  // set initial random seed
+    for ( x=0; x < X; x++ ) // Initialize P with random values
+      P[x] = myRandom();
+    for ( y=0; y < Y; y++ ) // Initialize T with random values
+      T[x] = myRandom();
+
+    C = ComputeCost ( P, X, T, Y );
+
+    cout << "t=" << t << " Cost = " << C << "\n";
     s = s + 1;
   }
 
