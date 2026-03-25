@@ -160,7 +160,7 @@ void oldChallenge ( unsigned Y, unsigned X, unsigned s )
   delete []cost;
 }
 
-void computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize )
+unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize )
 {
   unsigned * cost        = new unsigned[Vsize*Wsize];  // cost matrix of Vsize*Wsize elements
   unsigned * addV        = new unsigned[Vsize];        // array of Vsize elements
@@ -260,7 +260,7 @@ int main (int argc, char **argv)
     for (int y=0; y < Y; y++ ) // Initialize T with random values
       T[y] = myRandom();
 
-    C = computeCost ( P, X, T, Y );
+    unsigned C = computeCost ( P, X, T, Y );
 
     cout << "t=" << t << " Cost = " << C << "\n";
     s = s + 1;
