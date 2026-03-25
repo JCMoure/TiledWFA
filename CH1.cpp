@@ -1,5 +1,5 @@
 #include <iostream>
-#include <complex>
+#include <algorithm>
 
 using namespace std;
 
@@ -162,7 +162,7 @@ void oldChallenge ( unsigned Y, unsigned X, unsigned s )
 
 void computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize )
 {
-  unsigned * cost        = new unsigned[Vsize][Wsize];  // cost matrix of Vsize*Wsize elements
+  unsigned * cost        = new unsigned[Vsize*Wsize];  // cost matrix of Vsize*Wsize elements
   unsigned * addV        = new unsigned[Vsize];        // array of Vsize elements
   unsigned * addW        = new unsigned[Wsize];        // array of Vsize elements
   unsigned * addDiag     = new unsigned[Vsize+Wsize];  // array of Vsize+Wsize elements
@@ -182,43 +182,43 @@ void computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize )
   
   for ( int i=0; i < Vsize; i++ )
     for ( int j=0; j < Wsize; j++ )
-      cost[i][j] = 0;
+      cost[i*Wsize+j] = 0;
 
   for ( int j=0; j < Wsize; j++ ) {
     for ( int i=0; i < Vsize; i++ ) {
-      cost[i][j] += V[i]*W[j];
+      cost[i*Wsize+j] += V[i]*W[j];
     }
   }
 
   for ( int j=0; j < Wsize; j++ ) {
     for ( int i=0; i < Vsize; i++ ) {
-      addV[i] += cost[i][j];
+      addV[i] += cost[i*Wsize+j];
     }
   }
 
   for ( int j=0; j < Wsize; j++ ) {
     for ( int i=0; i < Vsize; i++ ) {
-      addW[j] += cost[i][j];
+      addW[j] += cost[i*Wsize+j];
     }
   }
 
   for ( int j=0; j < Wsize; j++ ) {
     for ( int i=0; i < Vsize; i++ ) {
-      addDiag[Vsize-(i+1)+j] += cost[i][j];
+      addDiag[Vsize-(i+1)+j] += cost[i*Wsize+j];
     }
   }
 
   for ( int j=0; j < Wsize; j++ ) {
     for ( int i=0; i < Vsize; i++ ) {
-      addAntiDiag[i+j] += cost[i][j];
+      addAntiDiag[i+j] += cost[i*Wsize+j];
     }
   }
 
   for ( int i=0; i < Vsize; i++ )
-    addV[i] = minimum(addV[i], addDiag[i], addAntiDiag[i]);
+    addV[i] = std::max({addV[i], addDiag[i], addAntiDiag[i]});
 
   for ( int j=0; j < Wsize; j++ )
-    addW[j] = minimum(addW[j], addDiag[Vsize+j-1], addAntiDiag[Vsize+j-1]);
+    addW[j] = std::max({addW[j], addDiag[Vsize+j-1], addAntiDiag[Vsize+j-1]});
 
    C = 0;
    for ( int i=0; i < Vsize; i++ )
@@ -232,7 +232,7 @@ void computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize )
   delete []addW;
   delete []addDiag;
   delete []addAntiDiag;
-  return C
+  return C;
 }
 
 
@@ -255,12 +255,12 @@ int main (int argc, char **argv)
   for (int t=0; t<REP; t++)
   {
     init_random(s);  // set initial random seed
-    for ( x=0; x < X; x++ ) // Initialize P with random values
+    for (int x=0; x < X; x++ ) // Initialize P with random values
       P[x] = myRandom();
-    for ( y=0; y < Y; y++ ) // Initialize T with random values
+    for (int y=0; y < Y; y++ ) // Initialize T with random values
       T[x] = myRandom();
 
-    C = ComputeCost ( P, X, T, Y );
+    C = computeCost ( P, X, T, Y );
 
     cout << "t=" << t << " Cost = " << C << "\n";
     s = s + 1;
