@@ -76,7 +76,7 @@ void Challenge ( unsigned Y, unsigned X, unsigned s )
         unsigned v1, v2;
         v1 = myRandom();
         v2 = myRandom();
-        board[x*Y+y+1] = JuliaNumber( v1, v2 );
+        board[x*Y+y+1] = Euclides( v1, v2 );
       }
       else
         board[x*Y+y+1] = myRandom();
