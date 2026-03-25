@@ -1,0 +1,15 @@
+#!/bin/bash -l
+#SBATCH --partition=cuda-ext.q
+#SBATCH -w aolin-gpu-1
+#SBATCH --exclusive
+
+module add gcc/13.2.1
+
+# compile for CPU
+g++ -Ofast CH1.cpp -o CH1
+
+# execute and measure total time and general performance counters
+perf stat -e cycles,instructions CH1
+
+#perf record CH1
+echo
