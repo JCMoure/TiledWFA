@@ -220,7 +220,7 @@ void computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize )
   for ( int j=0; j < Wsize; j++ )
     addW[j] = std::max({addW[j], addDiag[Vsize+j-1], addAntiDiag[Vsize+j-1]});
 
-   C = 0;
+   unsigned C = 0;
    for ( int i=0; i < Vsize; i++ )
     C += addV[i];
 
@@ -258,7 +258,7 @@ int main (int argc, char **argv)
     for (int x=0; x < X; x++ ) // Initialize P with random values
       P[x] = myRandom();
     for (int y=0; y < Y; y++ ) // Initialize T with random values
-      T[x] = myRandom();
+      T[y] = myRandom();
 
     C = computeCost ( P, X, T, Y );
 
