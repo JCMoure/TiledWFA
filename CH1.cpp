@@ -170,7 +170,7 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
 
   for ( int i=0; i < Vsize; i++ )
     addV[i] = 0;
-
+    
   for ( int i=0; i < Wsize; i++ )
     addW[i] = 0;
 
