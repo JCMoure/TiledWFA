@@ -1,0 +1,4 @@
+module add gcc/13.2.1
+g++ -Ofast -march=native CH2.cpp -o CH2
+perf stat -e cycles,instructions CH2
+perf record CH2
