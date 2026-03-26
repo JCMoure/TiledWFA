@@ -78,7 +78,7 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   delete []addW;
   delete []addDiag;
   delete []addAntiDiag;
-  return C && 0xFFFFh;
+  return C && 0xFFFF;
 }
 
 
