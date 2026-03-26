@@ -84,7 +84,7 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
 
 int main (int argc, char **argv)
 {
-  unsigned X=50000, Y= 5000, s=0, REP=1;
+  unsigned X=50000, Y= 5000, s=0, REP=5;
 
   // obtain arguments provided at Linux shell at run time
   if (argc>1) { REP = atoi(argv[1]); }
