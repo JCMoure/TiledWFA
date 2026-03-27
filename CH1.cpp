@@ -21,6 +21,51 @@ unsigned myRandom()
   return res;
 }
 
+void zeroArray( unsigned *V, int Size) {
+  for ( int i=0; i < Size; i++ )
+    V[i] = 0;
+}
+
+void computeMult(unsigned C[], unsigned V[], unsigned W[], int Vsz, int Wsz) {
+  for ( int j=0; j < Wsz; j++ ) {
+    for ( int i=0; i < Vsz; i++ ) {
+      C[i*Wsz+j] += V[i]*W[j];
+    }
+  }
+}
+
+void addRows(unsigned C[], unsigned V[], int Vsz, int Wsz) {
+  for ( int j=0; j < Wsz; j++ ) {
+    for ( int i=0; i < Vsz; i++ ) {
+      V[i] += C[i*Wsz+j];
+    }
+  }
+}
+
+void xorCols(unsigned C[], unsigned V[], int Vsz, int Wsz) {
+  for ( int j=0; j < Wsz; j++ ) {
+    for ( int i=0; i < Vsz; i++ ) {
+      V[j] ^= C[i*Wsz+j];
+    }
+  }
+}
+
+void xorOneDiags(unsigned C[], unsigned V[], int Vsz, int Wsz) {
+  for ( int j=0; j < Wsz; j++ ) {
+    for ( int i=0; i < Vsz; i++ ) {
+      V[Vsz-(i+1)+j] = (V[Vsz-(i+1)+j] ^ C[i*Wsz+j])+1;
+    }
+  }
+}
+
+void doubleAddAntiDiags(unsigned C[], unsigned V[], int Vsz, int Wsz) {
+  for ( int j=0; j < Wsz; j++ ) {
+    for ( int i=0; i < Vsz; i++ ) {
+      V[i+j] = 2*V[i+j] + C[i*Wsz+j];
+    }
+  }
+}
+
 unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize )
 {
   unsigned * cost        = new unsigned[Vsize*Wsize];  // cost matrix of Vsize*Wsize elements
@@ -30,52 +75,18 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   unsigned * addAntiDiag = new unsigned[Wsize+Vsize];  // array of Wsize+Vsize elements
   unsigned l, m, r, o;
 
-  for ( int i=0; i < Vsize; i++ )
-    addV[i] = 0;
-    
-  for ( int i=0; i < Wsize; i++ )
-    addW[i] = 0;
+  zeroArray(addV, Vsize);
+  zeroArray(addW, Wsize);
+  zeroArray(addDiag, Vsize+Wsize);
+  zeroArray(addAntiDiag, Wsize+Vsize);
+  zeroArray(cost, Vsize*Wsize);
 
-  for ( int i=0; i < Vsize+Wsize; i++ )
-    addDiag[i] = 0;
-  
-  for ( int i=0; i < Wsize+Vsize; i++ )
-    addAntiDiag[i] = 0;
-  
-  for ( int i=0; i < Vsize; i++ )
-    for ( int j=0; j < Wsize; j++ )
-      cost[i*Wsize+j] = 0;
-
-  for ( int j=0; j < Wsize; j++ ) {
-    for ( int i=0; i < Vsize; i++ ) {
-      cost[i*Wsize+j] += V[i]*W[j];
-    }
-  }
-
-  for ( int j=0; j < Wsize; j++ ) {
-    for ( int i=0; i < Vsize; i++ ) {
-      addV[i] += cost[i*Wsize+j];
-    }
-  }
-
-  for ( int j=0; j < Wsize; j++ ) {
-    for ( int i=0; i < Vsize; i++ ) {
-      addW[j] ^= cost[i*Wsize+j];
-    }
-  }
-
-  for ( int j=0; j < Wsize; j++ ) {
-    for ( int i=0; i < Vsize; i++ ) {
-      addDiag[Vsize-(i+1)+j] = (addDiag[Vsize-(i+1)+j] ^ cost[i*Wsize+j])+1;
-    }
-  }
-
-  for ( int j=0; j < Wsize; j++ ) {
-    for ( int i=0; i < Vsize; i++ ) {
-      addAntiDiag[i+j] = 2*addAntiDiag[i+j] + cost[i*Wsize+j];
-    }
-  }
-
+  computeMult(cost, V, W, Vsize, Wsize);
+  addRows(cost, addV, Vsize, Wsize);
+  xorCols(cost, addW, Vsize, Wsize);
+  xorOneDiags(cost, addDiag, Vsize, Wsize);
+  doubleAddAntiDiags(cost, addDiag, Vsize, Wsize);
+ 
   o = 0;
   for ( int i=0; i < Vsize-1; i++ ) {
     l = addDiag[i];
