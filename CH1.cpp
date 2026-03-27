@@ -92,6 +92,14 @@ unsigned addVect(unsigned V[], int Sz) {
   return C;
 }
 
+unsigned addBits(unsigned V[], int Sz) {
+  unsigned C;
+  for ( int i=0; i < Sz; i++ )
+    for ( int j=0; j<32; j++ )
+      C += (V[i] & 1<<j) != 0;
+  return C;
+}
+
 unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize )
 {
   unsigned * cost        = new unsigned[Vsize*Wsize];  // cost matrix of Vsize*Wsize elements
@@ -122,6 +130,9 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   C += addVect( addDiag, Vsize+Wsize );
   C += addVect( addAntiDiag, Vsize+Wsize );
   C += addVect( VandW, Vsize+Wsize );
+  C += addBits( addDiag, Vsize+Wsize );
+  C += addBits( addAntiDiag, Vsize+Wsize );
+  C += addBits( VandW, Vsize+Wsize );
 
   delete []cost;
   delete []addV;
