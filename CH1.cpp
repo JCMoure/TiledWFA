@@ -53,25 +53,25 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
 
   for ( int j=0; j < Wsize; j++ ) {
     for ( int i=0; i < Vsize; i++ ) {
-      addV[i] ^= cost[i*Wsize+j];
+      addV[i] += cost[i*Wsize+j];
     }
   }
 
   for ( int j=0; j < Wsize; j++ ) {
     for ( int i=0; i < Vsize; i++ ) {
-      addW[j] += cost[i*Wsize+j];
+      addW[j] ^= cost[i*Wsize+j];
     }
   }
 
   for ( int j=0; j < Wsize; j++ ) {
     for ( int i=0; i < Vsize; i++ ) {
-      addDiag[Vsize-(i+1)+j] ^= cost[i*Wsize+j];
+      addDiag[Vsize-(i+1)+j] = (addDiag[Vsize-(i+1)+j] ^ cost[i*Wsize+j])+1;
     }
   }
 
   for ( int j=0; j < Wsize; j++ ) {
     for ( int i=0; i < Vsize; i++ ) {
-      addAntiDiag[i+j] += cost[i*Wsize+j];
+      addAntiDiag[i+j] = 2*addAntiDiag[i+j] + cost[i*Wsize+j];
     }
   }
 
@@ -81,8 +81,8 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   for ( int j=0; j < Wsize; j++ )
     addW[j] = std::max({addW[j], addDiag[Vsize+j-1], addAntiDiag[Vsize+j-1]});
 
-   unsigned C = 0;
-   for ( int i=0; i < Vsize; i++ )
+  unsigned C = 0;
+  for ( int i=0; i < Vsize; i++ )
     C += addV[i];
 
   for ( int j=0; j < Wsize; j++ )
@@ -93,7 +93,7 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   delete []addW;
   delete []addDiag;
   delete []addAntiDiag;
-  return C && 0xFFFF;
+  return C & 0xFFFF;
 }
 
 
