@@ -85,6 +85,13 @@ void combine(unsigned Left[], unsigned Right[], unsigned V[], int Sz) {
   }
 }
 
+unsigned addVect(unsigned V[], int Sz) {
+  unsigned C;
+  for ( int i=0; i < Sz; i++ )
+    C += VandW[i];
+  return C;
+}
+
 unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize )
 {
   unsigned * cost        = new unsigned[Vsize*Wsize];  // cost matrix of Vsize*Wsize elements
@@ -108,10 +115,13 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   doubleAddAntiDiags(cost, addDiag, Vsize, Wsize);
   joinVectors ( addV, addW, VandW, Vsize, Wsize);
   combine (addDiag, addAntiDiag, VandW, Vsize+Wsize);
-  
+  combine (VandW, addDiag, addAntiDiag, Vsize+Wsize);
+  combine (addAntiDiag, VandW, addDiag, Vsize+Wsize);
+
   unsigned C = 0;
-  for ( int i=0; i < Vsize+Wsize; i++ )
-    C += VandW[i];
+  C += addVect( addDiag );
+  C += addVect( addAntiDiag );
+  C += addVect( VandW );
 
   delete []cost;
   delete []addV;
@@ -122,7 +132,6 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
 
   return C & 0xFFFF;
 }
-
 
 int main (int argc, char **argv)
 {
