@@ -26,6 +26,13 @@ void zeroArray( unsigned *V, int Size) {
     V[i] = 0;
 }
 
+void joinVectors ( V1, V2, V, V1sz, V2sz) {
+  for ( int i=0; i < V1sz; i++ )
+    V[i] = V1[i];
+  for ( int i=0; i < V2sz; i++ )
+    V[V1sz+i] = V2[i];
+}
+
 void computeMult(unsigned C[], unsigned V[], unsigned W[], int Vsz, int Wsz) {
   for ( int j=0; j < Wsz; j++ ) {
     for ( int i=0; i < Vsz; i++ ) {
@@ -66,6 +73,18 @@ void doubleAddAntiDiags(unsigned C[], unsigned V[], int Vsz, int Wsz) {
   }
 }
 
+void combine(unsigned Left[], unsigned Right[], unsigned V[], int Sz) {
+  unsigned l, m, r, o;
+  o = 0;
+  for ( int i=0; i < Sz-1; i++ ) {
+    l = Left[i];
+    r = Right[i];
+    m = V[i];
+    o = V[i+1];
+    V[i+1] = o ^ ( (l+r)*(l+m) + (l+r)*(m+r) );
+  }
+}
+
 unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize )
 {
   unsigned * cost        = new unsigned[Vsize*Wsize];  // cost matrix of Vsize*Wsize elements
@@ -73,6 +92,7 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   unsigned * addW        = new unsigned[Wsize];        // array of Vsize elements
   unsigned * addDiag     = new unsigned[Vsize+Wsize];  // array of Vsize+Wsize elements
   unsigned * addAntiDiag = new unsigned[Wsize+Vsize];  // array of Wsize+Vsize elements
+  unsigned * VandW       = new unsigned[Vsize+Wsize];  // array of Wsize+Vsize elements
   unsigned l, m, r, o;
 
   zeroArray(addV, Vsize);
@@ -86,37 +106,12 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   xorCols(cost, addW, Vsize, Wsize);
   xorOneDiags(cost, addDiag, Vsize, Wsize);
   doubleAddAntiDiags(cost, addDiag, Vsize, Wsize);
- 
-  o = 0;
-  for ( int i=0; i < Vsize-1; i++ ) {
-    l = addDiag[i];
-    r = addAntiDiag[i];
-    m = addV[i];
-    o = addV[i+1];
-
-    addV[i+1] = o ^ ( (l+r)*(l+m) + (l+r)*(m+r) );
-  }
-
-  l = addDiag[Vsize-1];
-  r = addAntiDiag[Vsize-1];
-  m = addV[Vsize-1];
-  o = addW[0];
-
-  for ( int j=0; j < Wsize-1; j++ ) {
-    addW[j] = o ^ ( (l+r)*(l+m) + (l+r)*(m+r) );
-    l = addDiag[Vsize+j];
-    r = addAntiDiag[Vsize+j];
-    m = addW[j];
-    o = addW[j+1];
-  }
-  addW[Wsize-1] = o ^ ( (l+r)*(l+m) + (l+r)*(m+r) );
-
+  joinVectors ( addV, addW, VandW, Vsize, Wsize);
+  combine (addDiag, addAntiDiag, VandW, Vsize+Wsize);
+  
   unsigned C = 0;
-  for ( int i=0; i < Vsize; i++ )
-    C += addV[i];
-
-  for ( int j=0; j < Wsize; j++ )
-    C += addW[j];
+  for ( int i=0; i < Vsize+Wsize; i++ )
+    C += VandW[i];
 
   delete []cost;
   delete []addV;
