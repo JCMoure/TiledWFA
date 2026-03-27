@@ -26,7 +26,7 @@ void zeroArray( unsigned *V, int Size) {
     V[i] = 0;
 }
 
-void joinVectors ( V1, V2, V, V1sz, V2sz) {
+void joinVectors (unsigned V1[], unsigned V2[], unsigned V[], int V1sz, int V2sz) {
   for ( int i=0; i < V1sz; i++ )
     V[i] = V1[i];
   for ( int i=0; i < V2sz; i++ )
@@ -93,13 +93,13 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   unsigned * addDiag     = new unsigned[Vsize+Wsize];  // array of Vsize+Wsize elements
   unsigned * addAntiDiag = new unsigned[Wsize+Vsize];  // array of Wsize+Vsize elements
   unsigned * VandW       = new unsigned[Vsize+Wsize];  // array of Wsize+Vsize elements
-  unsigned l, m, r, o;
 
   zeroArray(addV, Vsize);
   zeroArray(addW, Wsize);
-  zeroArray(addDiag, Vsize+Wsize);
+  zeroArray(addDiag,     Vsize+Wsize);
   zeroArray(addAntiDiag, Wsize+Vsize);
-  zeroArray(cost, Vsize*Wsize);
+  zeroArray(VandW,       Vsize+Wsize);
+  zeroArray(cost,        Vsize*Wsize);
 
   computeMult(cost, V, W, Vsize, Wsize);
   addRows(cost, addV, Vsize, Wsize);
@@ -118,6 +118,8 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   delete []addW;
   delete []addDiag;
   delete []addAntiDiag;
+  delete []VandW;
+
   return C & 0xFFFF;
 }
 
