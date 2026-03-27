@@ -88,7 +88,7 @@ void combine(unsigned Left[], unsigned Right[], unsigned V[], int Sz) {
 unsigned addVect(unsigned V[], int Sz) {
   unsigned C;
   for ( int i=0; i < Sz; i++ )
-    C += VandW[i];
+    C += V[i];
   return C;
 }
 
@@ -119,9 +119,9 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   combine (addAntiDiag, VandW, addDiag, Vsize+Wsize);
 
   unsigned C = 0;
-  C += addVect( addDiag );
-  C += addVect( addAntiDiag );
-  C += addVect( VandW );
+  C += addVect( addDiag, Vsize+Wsize );
+  C += addVect( addAntiDiag, Vsize+Wsize );
+  C += addVect( VandW, Vsize+Wsize );
 
   delete []cost;
   delete []addV;
