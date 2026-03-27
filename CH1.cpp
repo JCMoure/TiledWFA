@@ -73,15 +73,27 @@ void doubleAddAntiDiags(unsigned C[], unsigned V[], int Vsz, int Wsz) {
   }
 }
 
-void combine(unsigned Left[], unsigned Right[], unsigned V[], int Sz) {
+void combine1(unsigned Left[], unsigned Right[], unsigned V[], int Sz) {
   unsigned l, m, r, o;
-  o = 0;
+  o = V[Sz-1];
   for ( int i=0; i < Sz-1; i++ ) {
     l = Left[i];
     r = Right[i];
     m = V[i];
-    o = V[i+1];
-    V[i+1] = o ^ ( (l+r)*(l+m) + (l+r)*(m+r) );
+    V[i] = o ^ ( (l+r)*(l+m) + (l+r)*(m+r) );
+    o = m;
+  }
+}
+
+void combine2(unsigned Left[], unsigned Right[], unsigned V[], int Sz) {
+  unsigned l, m, r, o;
+  o = V[Sz-1];
+  for ( int i=0; i < Sz-1; i++ ) {
+    l = Left[i];
+    r = Right[i];
+    m = V[i];
+    V[i] = o ^ ( (l+r)*(l+m) + (l+r)*(m+r) );
+    o = V[i];
   }
 }
 
@@ -109,22 +121,28 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   unsigned * addAntiDiag = new unsigned[Wsize+Vsize];  // array of Wsize+Vsize elements
   unsigned * VandW       = new unsigned[Vsize+Wsize];  // array of Wsize+Vsize elements
 
-  zeroArray(addV, Vsize);
-  zeroArray(addW, Wsize);
+  zeroArray(addV,        Vsize);
+  zeroArray(addW,        Wsize);
   zeroArray(addDiag,     Vsize+Wsize);
   zeroArray(addAntiDiag, Wsize+Vsize);
   zeroArray(VandW,       Vsize+Wsize);
   zeroArray(cost,        Vsize*Wsize);
 
-  computeMult(cost, V, W, Vsize, Wsize);
-  addRows(cost, addV, Vsize, Wsize);
-  xorCols(cost, addW, Vsize, Wsize);
-  xorOneDiags(cost, addDiag, Vsize, Wsize);
+  computeMult       (cost, V, W, Vsize, Wsize);
+  addRows           (cost, addV, Vsize, Wsize);
+  xorCols           (cost, addW, Vsize, Wsize);
+  xorOneDiags       (cost, addDiag, Vsize, Wsize);
   doubleAddAntiDiags(cost, addDiag, Vsize, Wsize);
-  joinVectors ( addV, addW, VandW, Vsize, Wsize);
-  combine (addDiag, addAntiDiag, VandW, Vsize+Wsize);
-  combine (VandW, addDiag, addAntiDiag, Vsize+Wsize);
-  combine (addAntiDiag, VandW, addDiag, Vsize+Wsize);
+
+  joinVectors (addV, addW, VandW, Vsize, Wsize);
+  for (int k=0; k<Wsize; k++) {
+    combine1 (addDiag, addAntiDiag, VandW, Vsize+Wsize);
+    combine1 (VandW, addDiag, addAntiDiag, Vsize+Wsize);
+    combine1 (addAntiDiag, VandW, addDiag, Vsize+Wsize);
+    combine2 (addDiag, addAntiDiag, VandW, Vsize+Wsize);
+    combine2 (VandW, addDiag, addAntiDiag, Vsize+Wsize);
+    combine2 (addAntiDiag, VandW, addDiag, Vsize+Wsize);
+  }
 
   unsigned C = 0;
   C += addVect( addDiag, Vsize+Wsize );
@@ -146,7 +164,7 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
 
 int main (int argc, char **argv)
 {
-  unsigned X=2000, Y= 1000, s=0, REP=100;
+  unsigned X=2000, Y= 1000, s=0, REP=200;
 
   // obtain arguments provided at Linux shell at run time
   if (argc>1) { REP = atoi(argv[1]); }
@@ -160,6 +178,7 @@ int main (int argc, char **argv)
   unsigned * P = new unsigned[X];
   unsigned * T = new unsigned[Y];
 
+  unsigned C = 0;
   for (int t=0; t<REP; t++)
   {
     init_random(s);  // set initial random seed
@@ -168,9 +187,11 @@ int main (int argc, char **argv)
     for (int y=0; y < Y; y++ ) // Initialize T with random values
       T[y] = myRandom();
 
-    unsigned C = computeCost ( P, X, T, Y );
-
-    cout << "t=" << t << " Cost = " << C << "\n";
+    C += computeCost ( P, X, T, Y );
+    
+    if (t % 100 == 0) {
+      cout << "t=" << t << " Cost = " << C << "\n";    
+    }
     s = s + 1;
   }
 
