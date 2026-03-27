@@ -28,6 +28,7 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   unsigned * addW        = new unsigned[Wsize];        // array of Vsize elements
   unsigned * addDiag     = new unsigned[Vsize+Wsize];  // array of Vsize+Wsize elements
   unsigned * addAntiDiag = new unsigned[Wsize+Vsize];  // array of Wsize+Vsize elements
+  unsigned l, m, r, o;
 
   for ( int i=0; i < Vsize; i++ )
     addV[i] = 0;
@@ -75,11 +76,29 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
     }
   }
 
-  for ( int i=0; i < Vsize; i++ )
-    addV[i] = std::max({addV[i], addDiag[i], addAntiDiag[i]});
+  o = 0;
+  for ( int i=0; i < Vsize-1; i++ ) {
+    l = addDiag[i];
+    r = addAntiDiag[i];
+    m = addV[i];
+    o = addV[i+1];
 
-  for ( int j=0; j < Wsize; j++ )
-    addW[j] = std::max({addW[j], addDiag[Vsize+j-1], addAntiDiag[Vsize+j-1]});
+    addV[i+1] = o ^ ( (l+r)*(l+m) + (l+r)*(m+r) );
+  }
+
+  l = addDiag[Vsize-1];
+  r = addAntiDiag[Vsize-1];
+  m = addV[Vsize-1];
+  o = addW[0];
+
+  for ( int j=0; j < Wsize-1; j++ ) {
+    addW[j] = o ^ ( (l+r)*(l+m) + (l+r)*(m+r) );
+    l = addDiag[Vsize+j];
+    r = addAntiDiag[Vsize+j];
+    m = addW[j];
+    o = addW[j+1];
+  }
+  addW[Wsize-1] = o ^ ( (l+r)*(l+m) + (l+r)*(m+r) );
 
   unsigned C = 0;
   for ( int i=0; i < Vsize; i++ )
@@ -99,7 +118,7 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
 
 int main (int argc, char **argv)
 {
-  unsigned X=50000, Y= 5000, s=0, REP=5;
+  unsigned X=2000, Y= 1000, s=0, REP=100;
 
   // obtain arguments provided at Linux shell at run time
   if (argc>1) { REP = atoi(argv[1]); }
