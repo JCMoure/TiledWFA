@@ -98,14 +98,14 @@ void combine2(unsigned Left[], unsigned Right[], unsigned V[], int Sz) {
 }
 
 unsigned addVect(unsigned V[], int Sz) {
-  unsigned C;
+  unsigned C=0;
   for ( int i=0; i < Sz; i++ )
     C += V[i];
   return C;
 }
 
 unsigned addBits(unsigned V[], int Sz) {
-  unsigned C;
+  unsigned C=0;
   for ( int i=0; i < Sz; i++ )
     for ( int j=0; j<32; j++ )
       C += (V[i] & 1<<j) != 0;
@@ -135,7 +135,7 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   doubleAddAntiDiags(cost, addDiag, Vsize, Wsize);
 
   joinVectors (addV, addW, VandW, Vsize, Wsize);
-  for (int k=0; k<Wsize; k++) {
+  for (int k=0; k<5*Vsize/Wsize; k++) {
     combine1 (addDiag, addAntiDiag, VandW, Vsize+Wsize);
     combine1 (VandW, addDiag, addAntiDiag, Vsize+Wsize);
     combine1 (addAntiDiag, VandW, addDiag, Vsize+Wsize);
@@ -164,7 +164,7 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
 
 int main (int argc, char **argv)
 {
-  unsigned X=2000, Y= 1000, s=0, REP=200;
+  unsigned X=4000, Y= 500, s=0, REP=1000;
 
   // obtain arguments provided at Linux shell at run time
   if (argc>1) { REP = atoi(argv[1]); }
@@ -189,8 +189,8 @@ int main (int argc, char **argv)
 
     C += computeCost ( P, X, T, Y );
     
-    if (t % 100 == 0) {
-      cout << "t=" << t << " Cost = " << C << "\n";    
+    if (t % 100 == 99) {
+      cout << "t=" << t+1 << " Cost = " << C << "\n";    
     }
     s = s + 1;
   }
