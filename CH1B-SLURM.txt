@@ -4,6 +4,6 @@
 #SBATCH --exclusive
 
 module add gcc/13.2.1
-g++ -Ofast -march=native -fno-inline CH1.cpp -o CH1
-perf stat -e cycles,instructions,task-clock CH1
-# perf record CH1
+g++ -Ofast -fno-inline -march=native CH1B.cpp -o CH1B
+perf stat -e cycles,instructions,task-clock CH1B
+perf record CH1B
