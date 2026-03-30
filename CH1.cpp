@@ -132,7 +132,7 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   addRows           (cost, addV, Vsize, Wsize);
   xorCols           (cost, addW, Vsize, Wsize);
   xorOneDiags       (cost, addDiag, Vsize, Wsize);
-  doubleAddAntiDiags(cost, addDiag, Vsize, Wsize);
+  doubleAddAntiDiags(cost, addAntiDiag, Vsize, Wsize);
 
   joinVectors (addV, addW, VandW, Vsize, Wsize);
   for (int k=0; k<5*Vsize/Wsize; k++) {
