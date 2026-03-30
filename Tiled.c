@@ -5,8 +5,8 @@
 
 #define MAX_LONG 1000
 #define MATCH 0
-#define MISMATCH 3
-#define GAP 2
+#define MISMATCH 1
+#define GAP 1
 
 typedef struct {
     char seq1_alineada[MAX_LONG * 2];
@@ -123,7 +123,7 @@ int leer_siguiente_pareja(char *s1, char *s2) {
 
 // Función para mostrar la matriz de costes del alineamiento
 void mostrar_matriz_costes(int matriz[MAX_LONG][MAX_LONG], int len1, int len2, 
-                          char *seq1, char *seq2) {
+                          char *seq1, char *seq2, int add_best_possible_score) {
     printf("\n=== MATRIZ DE COSTES ===\n");
     printf("Filas: Secuencia 1 (%s)\n", seq1);
     printf("Columnas: Secuencia 2 (%s)\n\n", seq2);
@@ -155,9 +155,9 @@ void mostrar_matriz_costes(int matriz[MAX_LONG][MAX_LONG], int len1, int len2,
         // Imprimir valores de la matriz
         for (int j = 0; j <= len2; j++) {
             int best_possible_score = matriz[i][j];
-            if ( (j-i) > (len2-len1))
+            if ( add_best_possible_score && ((j-i) > (len2-len1)))
               best_possible_score += (j-i-(len2-len1))*GAP;
-            else if ( (j-i) < (len2-len1))
+            else if ( add_best_possible_score && ((j-i) < (len2-len1)))
               best_possible_score += (i-j-(len1-len2))*GAP;
             if ( j % 5 == 0 || i % 5 == 0 ) {           
                 printf("\033[1;31m %3d \033[0m", best_possible_score);
@@ -225,7 +225,8 @@ Alineamiento alinear_secuencias_con_matriz(char *seq1, char *seq2, int mostrar_m
     
     // Mostrar matrices si se solicita
     if (mostrar_matriz) {
-        mostrar_matriz_costes(matriz, len1, len2, seq1, seq2);
+        mostrar_matriz_costes(matriz, len1, len2, seq1, seq2, 0);
+        mostrar_matriz_costes(matriz, len1, len2, seq1, seq2, 1);
     }
     
     Alineamiento resultado;
