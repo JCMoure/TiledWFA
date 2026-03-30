@@ -145,12 +145,12 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   }
 
   unsigned C = 0;
-  C += addVect( addDiag, Vsize+Wsize );
-  C += addVect( addAntiDiag, Vsize+Wsize );
-  C += addVect( VandW, Vsize+Wsize );
-  C += addBits( addDiag, Vsize+Wsize );
-  C += addBits( addAntiDiag, Vsize+Wsize );
-  C += addBits( VandW, Vsize+Wsize );
+  C += addVect ( addDiag, Vsize+Wsize );
+  C += addVect ( addAntiDiag, Vsize+Wsize );
+  C += addVect ( VandW, Vsize+Wsize );
+  C += addBits ( addDiag, Vsize+Wsize );
+  C += addBits ( addAntiDiag, Vsize+Wsize );
+  C += addBits ( VandW, Vsize+Wsize );
 
   delete []cost;
   delete []addV;

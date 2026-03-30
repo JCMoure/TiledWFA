@@ -1,25 +1,23 @@
 ********** CHALLENGE # 1 ****************
 Input vector sizes are X=4000 and Y=500; Repeat 1000 times
-t=100 Cost = 3101764
-t=200 Cost = 6666210
-t=300 Cost = 9711856
-t=400 Cost = 12949004
-t=500 Cost = 16139091
-t=600 Cost = 19382423
-t=700 Cost = 22761907
-t=800 Cost = 25782604
-t=900 Cost = 29113540
-t=1000 Cost = 32629463
+t=100 Cost = 3462553
+t=200 Cost = 6693576
+t=300 Cost = 9637354
+t=400 Cost = 12907310
+t=500 Cost = 16326873
+t=600 Cost = 19450484
+t=700 Cost = 22526840
+t=800 Cost = 25702001
+t=900 Cost = 29130514
+t=1000 Cost = 32467026
 
  Performance counter stats for 'CH1':
 
-    43.642.971.504      cycles:u                  #    1,778 GHz                    
-    57.108.696.953      instructions:u            #    1,31  insn per cycle         
-         24.549,88 msec task-clock:u              #    1,000 CPUs utilized          
+    71.464.699.320      cycles:u                  #    1,777 GHz                    
+    57.108.712.575      instructions:u            #    0,80  insn per cycle         
+         40.227,80 msec task-clock:u              #    1,000 CPUs utilized          
 
-      24,556938370 seconds time elapsed
+      40,235197568 seconds time elapsed
 
-      24,533264000 seconds user
-       0,017996000 seconds sys
-
-
+      40,219939000 seconds user
+       0,009998000 seconds sys

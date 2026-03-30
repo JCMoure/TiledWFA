@@ -34,8 +34,8 @@ void joinVectors (unsigned V1[], unsigned V2[], unsigned V[], int V1sz, int V2sz
 }
 
 void computeMult(unsigned C[], unsigned V[], unsigned W[], int Vsz, int Wsz) {
-    for ( int i=0; i < Vsz; i++ ) {
-  for ( int j=0; j < Wsz; j++ ) {
+  for ( int i=0; i < Vsz; i++ ) {
+    for ( int j=0; j < Wsz; j++ ) {
       C[i*Wsz+j] = V[i]*W[j];
     }
   }
@@ -52,34 +52,23 @@ void addRows(unsigned C[], unsigned V[], int Vsz, int Wsz) {
 }
 
 void xorCols(unsigned C[], unsigned V[], int Vsz, int Wsz) {
-    for ( int i=0; i < Vsz; i++ ) {
-  for ( int j=0; j < Wsz; j++ ) {
+  for ( int i=0; i < Vsz; i++ ) {
+    for ( int j=0; j < Wsz; j++ ) {
       V[j] ^= C[i*Wsz+j];
     }
   }
 }
 
-void addRowsXorCols(unsigned C[], unsigned Vr[], unsigned Vc[], int Vsz, int Wsz) {
+void addRowsXorCols(unsigned C[], unsigned V[], unsigned W[], 
+		    unsigned Vr[], unsigned Vc[], int Vsz, int Wsz) {
   for ( int i=0; i < Vsz; i++ ) {
     unsigned S=0;
     for ( int j=0; j < Wsz; j++ ) {
-      unsigned cost = C[i*Wsz+j];
-      S    += cost;
-      Vc[j] ^= cost;
-    }
-    Vr[i] = S;
-  }
-}
-
-void cmpMulAddRowsXorCols(unsigned C[],  unsigned V[], unsigned W[], 
-		          unsigned Vr[], unsigned Vc[], int Vsz, int Wsz) {
-  for ( int i=0; i < Vsz; i++ ) {
-    unsigned S=0;
-    for ( int j=0; j < Wsz; j++ ) {
-      unsigned cost = V[i]*W[j];
+      unsigned cost; 
+      cost = V[i]*W[j];
       C[i*Wsz+j] = cost;
-      S         += cost;
-      Vc[j]     ^= cost;
+      S     += cost;
+      Vc[j] ^= cost;
     }
     Vr[i] = S;
   }
@@ -101,15 +90,16 @@ void doubleAddAntiDiags(unsigned C[], unsigned V[], int Vsz, int Wsz) {
   }
 }
 
-void xorOneDoubleAddDiags(unsigned C[], unsigned Vd[], unsigned Vad[], int Vsz, int Wsz) {
+
+void xorOneDoubleDiags(unsigned C[], unsigned V1[], unsigned V2[], int Vsz, int Wsz) {
   for ( int j=0; j < Wsz; j++ ) {
     for ( int i=0; i < Vsz; i++ ) {
-      unsigned cost   = C[i*Wsz+j];
-      Vd[Vsz-(i+1)+j] = (Vd[Vsz-(i+1)+j] ^ cost)+1;
-      Vad[i+j]        = 2*Vad[i+j] + cost;
+      V1[Vsz-(i+1)+j] = (V1[Vsz-(i+1)+j] ^ C[i*Wsz+j])+1;
+      V2[i+j]         = 2*V2[i+j] + C[i*Wsz+j];
     }
   }
 }
+
 
 void combine1(unsigned Left[], unsigned Right[], unsigned V[], int Sz) {
   unsigned l, m, r, o;
@@ -150,14 +140,6 @@ unsigned addBits(unsigned V[], int Sz) {
   return C;
 }
 
-unsigned addBitsP(unsigned V[], int Sz) {
-  unsigned C = 0;
-  for (int i = 0; i < Sz; i++) {
-    C += __builtin_popcount(V[i]);
-  }
-  return C;
-}
-
 unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize )
 {
   unsigned * cost        = new unsigned[Vsize*Wsize];  // cost matrix of Vsize*Wsize elements
@@ -174,14 +156,13 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   zeroArray(VandW,       Vsize+Wsize);
   //zeroArray(cost,        Vsize*Wsize);
 
-  computeMult       (cost, V, W, Vsize, Wsize);
+  //computeMult       (cost, V, W, Vsize, Wsize);
   //addRows           (cost, addV, Vsize, Wsize);
   //xorCols           (cost, addW, Vsize, Wsize);
-  addRowsXorCols    (cost, addV, addW, Vsize, Wsize);
-  //cmpMulAddRowsXorCols(cost, V, W, addV, addW, Vsize, Wsize); 
-  //xorOneDiags       (cost, addDiag, Vsize, Wsize);
-  //doubleAddAntiDiags(cost, addAntiDiag, Vsize, Wsize);
-  xorOneDoubleAddDiags(cost, addDiag, addAntiDiag, Vsize, Wsize);
+  addRowsXorCols    (cost, V, W, addV, addW, Vsize, Wsize);
+  // xorOneDiags       (cost, addDiag, Vsize, Wsize);
+  // doubleAddAntiDiags(cost, addAntiDiag, Vsize, Wsize);
+  xorOneDoubleDiags (cost, addDiag, addAntiDiag, Vsize, Wsize);
 
   joinVectors (addV, addW, VandW, Vsize, Wsize);
   for (int k=0; k<5*Vsize/Wsize; k++) {
@@ -194,12 +175,12 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   }
 
   unsigned C = 0;
-  C += addVect ( addDiag, Vsize+Wsize );
-  C += addVect ( addAntiDiag, Vsize+Wsize );
-  C += addVect ( VandW, Vsize+Wsize );
-  C += addBitsP( addDiag, Vsize+Wsize );
-  C += addBitsP( addAntiDiag, Vsize+Wsize );
-  C += addBitsP( VandW, Vsize+Wsize );
+  C += addVect( addDiag, Vsize+Wsize );
+  C += addVect( addAntiDiag, Vsize+Wsize );
+  C += addVect( VandW, Vsize+Wsize );
+  C += addBits( addDiag, Vsize+Wsize );
+  C += addBits( addAntiDiag, Vsize+Wsize );
+  C += addBits( VandW, Vsize+Wsize );
 
   delete []cost;
   delete []addV;
