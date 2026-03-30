@@ -86,25 +86,51 @@ void cmpMulAddRowsXorCols(unsigned C[],  unsigned V[], unsigned W[],
 }
 
 void xorOneDiags(unsigned C[], unsigned V[], int Vsz, int Wsz) {
-  for ( int j=0; j < Wsz; j++ ) {
     for ( int i=0; i < Vsz; i++ ) {
+  for ( int j=0; j < Wsz; j++ ) {
       V[Vsz-(i+1)+j] = (V[Vsz-(i+1)+j] ^ C[i*Wsz+j])+1;
     }
   }
 }
 
 void doubleAddAntiDiags(unsigned C[], unsigned V[], int Vsz, int Wsz) {
+    for ( int i=Vsz-1; i >= 0; i-- ) {
   for ( int j=0; j < Wsz; j++ ) {
-    for ( int i=0; i < Vsz; i++ ) {
       V[i+j] = 2*V[i+j] + C[i*Wsz+j];
     }
   }
 }
 
-void xorOneDoubleAddDiags(unsigned C[], unsigned Vd[], unsigned Vad[], int Vsz, int Wsz) {
+void xorOneDiagsAddRows(unsigned V[], unsigned W[], 
+		        unsigned Vrows[], unsigned Vdiag[], int Vsz, int Wsz) {
+  for ( int i=0; i < Vsz; i++ ) {
+    unsigned S=0;
+    for ( int j=0; j < Wsz; j++ ) {
+      unsigned cost      = V[i]*W[j];
+      S                 += cost;
+      Vdiag[Vsz-(i+1)+j] = (Vdiag[Vsz-(i+1)+j] ^ cost)+1;
+    }
+    Vrows[i] = S;
+  }
+}
+
+void twoAddXorCols(unsigned V[], unsigned W[], 
+		   unsigned Vcol[], unsigned Vadiag[], int Vsz, int Wsz) {
+  for ( int i=Vsz-1; i >= 0; i-- ) {
+    for ( int j=0; j < Wsz; j++ ) {
+      unsigned cost = V[i]*W[j];
+      Vadiag[i+j]   = 2*Vadiag[i+j] + cost;
+      Vcol[j]      ^= cost;
+    }
+  }
+}
+
+  
+void xorOneDoubleAddDiags(unsigned V[], unsigned W[],
+	                  unsigned Vd[], unsigned Vad[], int Vsz, int Wsz) {
   for ( int j=0; j < Wsz; j++ ) {
     for ( int i=0; i < Vsz; i++ ) {
-      unsigned cost   = C[i*Wsz+j];
+      unsigned cost   = V[i]*W[j];
       Vd[Vsz-(i+1)+j] = (Vd[Vsz-(i+1)+j] ^ cost)+1;
       Vad[i+j]        = 2*Vad[i+j] + cost;
     }
@@ -160,7 +186,7 @@ unsigned addBitsP(unsigned V[], int Sz) {
 
 unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize )
 {
-  unsigned * cost        = new unsigned[Vsize*Wsize];  // cost matrix of Vsize*Wsize elements
+  // unsigned * cost        = new unsigned[Vsize*Wsize];  // cost matrix of Vsize*Wsize elements
   unsigned * addV        = new unsigned[Vsize];        // array of Vsize elements
   unsigned * addW        = new unsigned[Wsize];        // array of Vsize elements
   unsigned * addDiag     = new unsigned[Vsize+Wsize];  // array of Vsize+Wsize elements
@@ -174,14 +200,14 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   zeroArray(VandW,       Vsize+Wsize);
   //zeroArray(cost,        Vsize*Wsize);
 
-  computeMult       (cost, V, W, Vsize, Wsize);
+  //computeMult       (cost, V, W, Vsize, Wsize);
   //addRows           (cost, addV, Vsize, Wsize);
   //xorCols           (cost, addW, Vsize, Wsize);
-  addRowsXorCols    (cost, addV, addW, Vsize, Wsize);
+  //addRowsXorCols    (cost, addV, addW, Vsize, Wsize);
   //cmpMulAddRowsXorCols(cost, V, W, addV, addW, Vsize, Wsize); 
-  //xorOneDiags       (cost, addDiag, Vsize, Wsize);
-  //doubleAddAntiDiags(cost, addAntiDiag, Vsize, Wsize);
-  xorOneDoubleAddDiags(cost, addDiag, addAntiDiag, Vsize, Wsize);
+  //xorOneDoubleAddDiags(cost, addDiag, addAntiDiag, Vsize, Wsize);
+  xorOneDiagsAddRows(V, W, addV, addDiag,     Vsize, Wsize);
+  twoAddXorCols     (V, W, addW, addAntiDiag, Vsize, Wsize);
 
   joinVectors (addV, addW, VandW, Vsize, Wsize);
   for (int k=0; k<5*Vsize/Wsize; k++) {
@@ -201,7 +227,7 @@ unsigned computeCost ( unsigned *V, unsigned Vsize, unsigned *W, unsigned Wsize 
   C += addBitsP( addAntiDiag, Vsize+Wsize );
   C += addBitsP( VandW, Vsize+Wsize );
 
-  delete []cost;
+  // delete []cost;
   delete []addV;
   delete []addW;
   delete []addDiag;
