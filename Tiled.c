@@ -154,10 +154,15 @@ void mostrar_matriz_costes(int matriz[MAX_LONG][MAX_LONG], int len1, int len2,
         
         // Imprimir valores de la matriz
         for (int j = 0; j <= len2; j++) {
+            int best_possible_score = matriz[i][j];
+            if ( (j-i) > (len2-len1))
+              best_possible_score += (j-i-(len2-len1))*GAP;
+            else if ( (j-i) < (len2-len1))
+              best_possible_score += (i-j-(len1-len2))*GAP;
             if ( j % 5 == 0 || i % 5 == 0 ) {           
-                printf("\033[1;31m %3d \033[0m", matriz[i][j]);
+                printf("\033[1;31m %3d \033[0m", best_possible_score);
             } else {
-                printf(" %3d ", matriz[i][j]);
+                printf(" %3d ", best_possible_score);
             }
         }
         printf("\n");
