@@ -1,0 +1,39 @@
+********** CHALLENGE # 1 ****************
+Input vector sizes are X=4000 and Y=500; Repeat 1000 times
+t=100 Cost = 3462553
+t=200 Cost = 6693576
+t=300 Cost = 9637354
+t=400 Cost = 12907310
+t=500 Cost = 16326873
+t=600 Cost = 19450484
+t=700 Cost = 22526840
+t=800 Cost = 25702001
+t=900 Cost = 29130514
+t=1000 Cost = 32467026
+
+ Performance counter stats for 'CH1B':
+
+     7.554.424.705      cycles:u                  #    1,781 GHz                    
+    20.851.845.871      instructions:u            #    2,76  insn per cycle         
+          4.240,77 msec task-clock:u              #    0,999 CPUs utilized          
+
+       4,244443544 seconds time elapsed
+
+       4,239999000 seconds user
+       0,001999000 seconds sys
+
+
+********** CHALLENGE # 1 ****************
+Input vector sizes are X=4000 and Y=500; Repeat 1000 times
+t=100 Cost = 3462553
+t=200 Cost = 6693576
+t=300 Cost = 9637354
+t=400 Cost = 12907310
+t=500 Cost = 16326873
+t=600 Cost = 19450484
+t=700 Cost = 22526840
+t=800 Cost = 25702001
+t=900 Cost = 29130514
+t=1000 Cost = 32467026
+[ perf record: Woken up 3 times to write data ]
+[ perf record: Captured and wrote 0,683 MB perf.data (17861 samples) ]
