@@ -154,7 +154,11 @@ void mostrar_matriz_costes(int matriz[MAX_LONG][MAX_LONG], int len1, int len2,
         
         // Imprimir valores de la matriz
         for (int j = 0; j <= len2; j++) {
-            printf(" %3d ", matriz[i][j]);
+            if ( j % 5 == 0 || i % 5 == 0 ) {           
+                printf("\033[1;31m %3d \033[0m", matriz[i][j]);
+            } else {
+                printf(" %3d ", matriz[i][j]);
+            }
         }
         printf("\n");
         
