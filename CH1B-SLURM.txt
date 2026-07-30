@@ -1,9 +1,0 @@
-#!/bin/bash -l              
-#SBATCH --partition=xeon.q
-#SBATCH -w aolin-cpu-1
-#SBATCH --exclusive
-
-module add gcc/13.2.1
-g++ -Ofast -fno-inline -march=native CH1B.cpp -o CH1B
-perf stat -e cycles,instructions,task-clock CH1B
-perf record CH1B
