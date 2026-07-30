@@ -50,7 +50,7 @@ def texto_a_imagen(archivo_txt, archivo_salida="out.png", escala=1.0):
                 return len(text) * font_size * 0.6, font_size
     
     # Calcular el tamaño de cada celda
-    sample_text = " *999*"
+    sample_text = "999"
     text_width, text_height = get_text_size(sample_text, font)
     cell_width = int(text_width + 10 * escala)
     cell_height = int(text_height + 8 * escala)
