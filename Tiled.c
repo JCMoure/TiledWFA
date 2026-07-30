@@ -193,17 +193,19 @@ void generar_archivo_matriz(int matriz[MAX_LONG][MAX_LONG], int len1, int len2,
     fprintf(archivo, "Columnas: Secuencia 2 (%s)\n\n", seq2);
     
     // Encabezado de columnas
-    fprintf(archivo, "      ");  // Espacio para esquina
-    fprintf(archivo, "-  ");     // Gap inicial
+    fprintf(archivo, "       ");  // Espacio para esquina
+    fprintf(archivo, "-   ");    // Gap inicial
+    
+    // Mostrar caracteres de seq2
     for (int j = 0; j < len2; j++) {
-        fprintf(archivo, "  %c  ", seq2[j]);
+        fprintf(archivo, "  %c   ", seq2[j]);
     }
     fprintf(archivo, "\n");
     
     // Línea separadora
     fprintf(archivo, "  ");
     for (int j = 0; j <= len2 + 1; j++) {
-        fprintf(archivo, "-----");
+        fprintf(archivo, "------");
     }
     fprintf(archivo, "\n");
     
@@ -216,7 +218,7 @@ void generar_archivo_matriz(int matriz[MAX_LONG][MAX_LONG], int len1, int len2,
             fprintf(archivo, "%c |", seq1[i-1]);
         }
         
-        // Valores
+        // Valores de la matriz
         for (int j = 0; j <= len2; j++) {
             int best_possible_score = matriz[i][j];
             if (add_best_possible_score) {
@@ -227,7 +229,7 @@ void generar_archivo_matriz(int matriz[MAX_LONG][MAX_LONG], int len1, int len2,
                 }
             }
             
-            // Marcar celdas especiales con * para identificar en la imagen
+            // Marcar celdas especiales con *
             if (j % 5 == 0 || i % 5 == 0) {
                 fprintf(archivo, " *%3d*", best_possible_score);
             } else {
@@ -236,11 +238,11 @@ void generar_archivo_matriz(int matriz[MAX_LONG][MAX_LONG], int len1, int len2,
         }
         fprintf(archivo, "\n");
         
-        // Línea separadora
+        // Línea separadora entre filas
         if (i < len1) {
             fprintf(archivo, "  |");
             for (int j = 0; j <= len2; j++) {
-                fprintf(archivo, "-----");
+                fprintf(archivo, "------");
             }
             fprintf(archivo, "\n");
         }
@@ -248,7 +250,7 @@ void generar_archivo_matriz(int matriz[MAX_LONG][MAX_LONG], int len1, int len2,
     fprintf(archivo, "\n");
     
     fclose(archivo);
-    printf("Archivo matriz.txt generado correctamente.\n");
+    printf("✅ Archivo matriz.txt generado correctamente.\n");
 }
 
 // Alinear_secuencias y mostrar  matrices (Needleman-Wunsch)

@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from PIL import Image, ImageDraw, ImageFont
 import os
+import sys
 
 def texto_a_imagen(archivo_txt, archivo_salida="out.png", escala=1.0):
     """
@@ -17,9 +18,9 @@ def texto_a_imagen(archivo_txt, archivo_salida="out.png", escala=1.0):
         lineas = f.readlines()
     
     # Configuración de fuente
+    font_size = int(14 * escala)
     try:
         # Intentar usar una fuente del sistema
-        font_size = int(14 * escala)
         font = ImageFont.truetype("/usr/share/fonts/truetype/liberation/LiberationMono-Regular.ttf", font_size)
     except:
         try:
@@ -29,43 +30,60 @@ def texto_a_imagen(archivo_txt, archivo_salida="out.png", escala=1.0):
             font = ImageFont.load_default()
             font_size = 12
     
-    # Calcular dimensiones del texto
-    # Usar un contexto temporal para medir
-    temp_img = Image.new('RGB', (1, 1))
-    temp_draw = ImageDraw.Draw(temp_img)
+    # Función para medir texto (compatible con versiones antiguas de Pillow)
+    def get_text_size(text, font):
+        """Obtiene el tamaño de un texto usando métodos compatibles"""
+        temp_img = Image.new('RGB', (1, 1))
+        temp_draw = ImageDraw.Draw(temp_img)
+        
+        # Método 1: Usar textbbox (nuevo)
+        try:
+            bbox = temp_draw.textbbox((0, 0), text, font=font)
+            return bbox[2] - bbox[0], bbox[3] - bbox[1]
+        except AttributeError:
+            # Método 2: Usar textsize (antiguo, pero compatible)
+            try:
+                size = temp_draw.textsize(text, font=font)
+                return size[0], size[1]
+            except AttributeError:
+                # Método 3: Estimar tamaño
+                return len(text) * font_size * 0.6, font_size
     
-    # Medir el tamaño de cada celda
+    # Calcular el tamaño de cada celda
     sample_text = " *999*"
-    bbox = temp_draw.textbbox((0, 0), sample_text, font=font)
-    cell_width = bbox[2] - bbox[0] + 10
-    cell_height = bbox[3] - bbox[1] + 8
+    text_width, text_height = get_text_size(sample_text, font)
+    cell_width = int(text_width + 10 * escala)
+    cell_height = int(text_height + 8 * escala)
     
-    # Calcular dimensiones de la imagen
-    max_line_len = max(len(linea) for linea in lineas)
-    
-    # Contar columnas de la matriz (aprox)
+    # Determinar estructura de la matriz
+    # Encontrar dónde comienza la matriz (línea con formato de tabla)
     matrix_start = 0
     for i, linea in enumerate(lineas):
-        if '- |' in linea or 'c |' in linea or any(c.isalpha() and '|' in linea for c in linea):
+        if '- |' in linea or ('|' in linea and i > 2):
             matrix_start = i
             break
     
-    # Determinar número de columnas y filas
+    # Contar filas y columnas de la matriz
     num_filas = 0
     num_columnas = 0
     for linea in lineas[matrix_start:]:
         if '-----' in linea or '|' not in linea:
             continue
-        if '|' in linea and '=' not in linea:
+        if '|' in linea and '=' not in linea and '---' not in linea:
             num_filas += 1
-            # Contar valores en la línea
-            parts = linea.split('|')
-            if len(parts) > 1:
-                valores = parts[1].strip().split()
+            # Contar valores en la línea (separados por |)
+            partes = linea.split('|')
+            if len(partes) > 1:
+                # Contar elementos en la parte derecha
+                valores = partes[1].strip().split()
                 num_columnas = max(num_columnas, len(valores))
     
+    # Si no se detectaron columnas, usar valor predeterminado
+    if num_columnas == 0:
+        num_columnas = 10  # Valor predeterminado
+    
     # Calcular dimensiones de la imagen con padding
-    padding = 20 * escala
+    padding = int(20 * escala)
     width = int(padding * 2 + (num_columnas + 1) * cell_width + 100)
     height = int(padding * 2 + (num_filas + 1) * cell_height + 100)
     
@@ -78,74 +96,135 @@ def texto_a_imagen(archivo_txt, archivo_salida="out.png", escala=1.0):
         'normal': (0, 0, 0),
         'rojo': (255, 0, 0),
         'fondo_rojo': (255, 240, 240),
-        'gris': (200, 200, 200),
-        'azul_claro': (240, 248, 255),
+        'gris': (180, 180, 180),
+        'azul_claro': (230, 240, 255),
+        'separador': (200, 200, 200),
     }
+    
+    # Función para dibujar texto con compatibilidad
+    def draw_text(draw, pos, text, fill, font):
+        try:
+            draw.text(pos, text, fill=fill, font=font)
+        except:
+            # Fallback si no se puede usar la fuente
+            draw.text(pos, text, fill=fill)
     
     # Dibujar el texto línea por línea
     y = padding
+    fila_actual = 0
+    
     for idx, linea in enumerate(lineas):
-        # Para la matriz, procesar cada línea
+        linea = linea.rstrip('\n')
+        
+        # Saltar líneas vacías
+        if not linea.strip():
+            y += cell_height / 2
+            continue
+        
+        # Línea separadora de la matriz (-----)
         if '-----' in linea:
-            # Línea separadora
-            draw.line([(padding, y + cell_height/2), 
-                       (width - padding, y + cell_height/2)], 
-                      fill=colores['gris'], width=2)
+            y_sep = y + cell_height/2
+            draw.line([(padding, y_sep), (width - padding, y_sep)], 
+                      fill=colores['separador'], width=2)
             y += cell_height/2
             continue
         
-        # Dibujar línea de texto
-        x = padding
-        i = 0
-        while i < len(linea):
-            # Detectar celdas especiales con *
-            if i < len(linea) - 5 and linea[i:i+2] == ' *':
-                # Celda especial (en rojo)
-                end = i + 2
-                while end < len(linea) and linea[end] != '*':
-                    end += 1
-                if end < len(linea):
-                    texto_celda = linea[i+2:end+1]  # Incluye el * final
-                    draw.rectangle([x-2, y-2, x+cell_width+2, y+cell_height+2], 
-                                 fill=colores['azul_claro'])
-                    draw.text((x, y), texto_celda, fill=colores['rojo'], font=font)
-                    x += cell_width
-                    i = end + 1
-                    continue
+        # Procesar líneas de la matriz (contienen '|')
+        if '|' in linea and idx >= matrix_start:
+            # Dividir la línea en partes
+            partes = linea.split('|')
             
-            # Texto normal
-            if linea[i] != ' ' or (i > 0 and linea[i-1] == ' '):
-                # Encontrar el final de la palabra
-                end = i
-                while end < len(linea) and linea[end] != ' ':
-                    end += 1
-                if end > i:
-                    palabra = linea[i:end]
-                    draw.text((x, y), palabra, fill=colores['normal'], font=font)
-                    # Calcular ancho aproximado
-                    bbox = draw.textbbox((x, y), palabra, font=font)
-                    x += bbox[2] - bbox[0] + 5
-                    i = end
-                    continue
-            i += 1
-        
-        y += cell_height
+            # Parte izquierda (encabezado de fila)
+            if len(partes) > 0 and partes[0].strip():
+                x = padding + 5
+                texto_header = partes[0].strip()
+                draw_text(draw, (x, y + 5), texto_header, colores['normal'], font)
+            
+            # Parte derecha (valores de la matriz)
+            if len(partes) > 1:
+                # Extraer valores, incluyendo los marcadores *
+                valores = partes[1].strip().split()
+                x = padding + cell_width + 10
+                
+                for valor in valores:
+                    # Verificar si es un valor especial (con *)
+                    es_especial = '*' in valor
+                    
+                    # Limpiar el valor para mostrar
+                    valor_limpio = valor.replace('*', '')
+                    
+                    # Dibujar fondo para celdas especiales
+                    if es_especial:
+                        draw.rectangle([x-3, y-2, x+cell_width-5, y+cell_height-2], 
+                                     fill=colores['azul_claro'])
+                    
+                    # Dibujar el valor
+                    color = colores['rojo'] if es_especial else colores['normal']
+                    draw_text(draw, (x + 5, y + 5), valor_limpio, color, font)
+                    
+                    # Dibujar bordes de celda (excepto para la última)
+                    draw.rectangle([x, y, x+cell_width-2, y+cell_height-2], 
+                                 outline=colores['gris'], width=1)
+                    
+                    x += cell_width
+            
+            y += cell_height
+            fila_actual += 1
+        else:
+            # Texto normal (títulos, etc.)
+            # Para encabezados, centrar
+            if idx < matrix_start:
+                draw_text(draw, (padding, y + 5), linea, colores['normal'], font)
+                y += cell_height
+            else:
+                # Otro texto fuera de la matriz
+                if linea.strip():
+                    draw_text(draw, (padding, y + 5), linea, colores['normal'], font)
+                    y += cell_height / 2
     
     # Guardar imagen
     img.save(archivo_salida)
-    print(f"Imagen guardada como {archivo_salida}")
-    print(f"Dimensiones: {width}x{height} píxeles")
+    print(f"✅ Imagen guardada como {archivo_salida}")
+    print(f"📐 Dimensiones: {width}x{height} píxeles")
+    print(f"📊 Filas: {num_filas}, Columnas: {num_columnas}")
 
 if __name__ == "__main__":
     # Verificar si existe el archivo
     if not os.path.exists("matriz.txt"):
-        print("Error: No se encuentra el archivo matriz.txt")
+        print("❌ Error: No se encuentra el archivo matriz.txt")
         print("Asegúrate de ejecutar primero el programa C que genera el archivo")
-        exit(1)
+        sys.exit(1)
+    
+    # Verificar versión de Pillow
+    try:
+        from PIL import __version__ as pillow_version
+        print(f"📦 Pillow versión: {pillow_version}")
+    except:
+        pass
     
     # Convertir a PNG
+    print("🔄 Convirtiendo matriz.txt a imagen...")
     texto_a_imagen("matriz.txt", "out.png", escala=1.0)
     
-    # Opcional: También generar una versión con más zoom
-    texto_a_imagen("matriz.txt", "out_zoom.png", escala=1.5)
-    print("\nVersión con zoom generada: out_zoom.png")
+    # Generar versión con zoom
+    print("\n🔍 Generando versión con zoom...")
+    texto_a_imagen("matriz.txt", "out_zoom.png", escala=1.8)
+    
+    print("\n✨ Archivos generados:")
+    print("   - out.png (tamaño normal)")
+    print("   - out_zoom.png (con zoom)")
+    
+    # Intentar abrir la imagen
+    try:
+        if sys.platform == 'darwin':  # macOS
+            os.system(f"open out.png")
+        elif sys.platform == 'linux':
+            # Intentar diferentes visores de imágenes
+            for viewer in ['display', 'eog', 'xdg-open', 'gimp']:
+                if os.system(f"which {viewer} > /dev/null 2>&1") == 0:
+                    os.system(f"{viewer} out.png &")
+                    break
+        elif sys.platform == 'win32':  # Windows
+            os.system(f"start out.png")
+    except:
+        print("💡 Puedes abrir out.png manualmente con tu visor de imágenes favorito")
