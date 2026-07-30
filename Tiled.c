@@ -2,6 +2,8 @@
 #include <string.h>
 #include <stdlib.h>
 #include <ctype.h>
+#include <gd.h>
+#include <math.h>
 
 #define MAX_LONG 1000
 #define MATCH 0
@@ -179,6 +181,126 @@ void mostrar_matriz_costes(int matriz[MAX_LONG][MAX_LONG], int len1, int len2,
     printf("\n");
 }
 
+void generar_imagen_matriz(int matriz[MAX_LONG][MAX_LONG], int len1, int len2, 
+                          char *seq1, char *seq2, int add_best_possible_score) {
+    // Configuración de la imagen
+    int cell_width = 60;
+    int cell_height = 40;
+    int padding = 20;
+    int header_width = 80;
+    int header_height = 50;
+    
+    // Calcular dimensiones de la imagen
+    int width = header_width + (len2 + 1) * cell_width + padding * 2;
+    int height = header_height + (len1 + 1) * cell_height + padding * 2;
+    
+    // Crear imagen
+    gdImagePtr img = gdImageCreate(width, height);
+    
+    // Colores
+    int white = gdImageColorAllocate(img, 255, 255, 255);
+    int black = gdImageColorAllocate(img, 0, 0, 0);
+    int red = gdImageColorAllocate(img, 255, 0, 0);
+    int gray = gdImageColorAllocate(img, 200, 200, 200);
+    int light_blue = gdImageColorAllocate(img, 240, 248, 255);
+    
+    // Fondo blanco
+    gdImageFilledRectangle(img, 0, 0, width, height, white);
+    
+    // Fuente (usamos fuente por defecto, tamaño 12)
+    int font = gdFontGetMediumBold();
+    int font_width = 8;
+    int font_height = 12;
+    
+    // Dibujar encabezado de columnas (secuencia 2)
+    // Espacio para esquina superior izquierda
+    gdImageString(img, font, padding + header_width/2 - 10, padding + 5, 
+                 (unsigned char *)"-", black);
+    
+    // Columnas
+    for (int j = 0; j < len2; j++) {
+        int x = padding + header_width + j * cell_width + cell_width/2 - font_width/2;
+        int y = padding + 5;
+        char col_char[2] = {seq2[j], '\0'};
+        gdImageString(img, font, x, y, (unsigned char *)col_char, black);
+    }
+    
+    // Dibujar línea separadora horizontal
+    gdImageLine(img, padding, padding + header_height - 10, 
+                padding + header_width + (len2) * cell_width, 
+                padding + header_height - 10, gray);
+    
+    // Dibujar cada fila
+    for (int i = 0; i <= len1; i++) {
+        int y_base = padding + header_height + i * cell_height;
+        
+        // Encabezado de fila
+        int x_header = padding + 10;
+        if (i == 0) {
+            gdImageString(img, font, x_header, y_base + 5, (unsigned char *)"-", black);
+        } else {
+            char row_char[2] = {seq1[i-1], '\0'};
+            gdImageString(img, font, x_header, y_base + 5, (unsigned char *)row_char, black);
+        }
+        
+        // Línea separadora vertical
+        gdImageLine(img, padding + header_width - 5, y_base, 
+                    padding + header_width - 5, y_base + cell_height, gray);
+        
+        // Dibujar valores de la matriz
+        for (int j = 0; j <= len2; j++) {
+            int x = padding + header_width + j * cell_width;
+            int y = y_base;
+            
+            // Calcular best_possible_score
+            int best_possible_score = matriz[i][j];
+            if (add_best_possible_score) {
+                if ((j-i) > (len2-len1)) {
+                    best_possible_score += (j-i-(len2-len1))*GAP;
+                } else if ((j-i) < (len2-len1)) {
+                    best_possible_score += (i-j-(len1-len2))*GAP;
+                }
+            }
+            
+            // Color según condición
+            int color;
+            if (j % 5 == 0 || i % 5 == 0) {
+                color = red;
+                // Fondo ligeramente coloreado para destacar
+                gdImageFilledRectangle(img, x, y, x + cell_width, y + cell_height, light_blue);
+            } else {
+                color = black;
+            }
+            
+            // Dibujar bordes de celda
+            gdImageRectangle(img, x, y, x + cell_width, y + cell_height, gray);
+            
+            // Mostrar valor
+            char value_str[10];
+            sprintf(value_str, "%3d", best_possible_score);
+            int text_x = x + cell_width/2 - (strlen(value_str) * font_width)/2;
+            int text_y = y + cell_height/2 - font_height/2;
+            gdImageString(img, font, text_x, text_y, (unsigned char *)value_str, color);
+        }
+    }
+    
+    // Añadir título
+    char title[256];
+    sprintf(title, "MATRIZ DE COSTES: %s vs %s", seq1, seq2);
+    gdImageString(img, font, padding, padding + header_height + (len1+1)*cell_height + 10, 
+                 (unsigned char *)title, black);
+    
+    // Guardar imagen
+    FILE *output = fopen("out.png", "wb");
+    if (output) {
+        gdImagePng(img, output);
+        fclose(output);
+    }
+    
+    // Liberar memoria
+    gdImageDestroy(img);
+}
+
 // Alinear_secuencias y mostrar  matrices (Needleman-Wunsch)
 Alineamiento alinear_secuencias_con_matriz(char *seq1, char *seq2, int mostrar_matriz) {
     int len1 = strlen(seq1);
@@ -225,8 +347,10 @@ Alineamiento alinear_secuencias_con_matriz(char *seq1, char *seq2, int mostrar_m
     
     // Mostrar matrices si se solicita
     if (mostrar_matriz) {
-        mostrar_matriz_costes(matriz, len1, len2, seq1, seq2, 0);
-        mostrar_matriz_costes(matriz, len1, len2, seq1, seq2, 1);
+        // mostrar_matriz_costes(matriz, len1, len2, seq1, seq2, 0);
+        // mostrar_matriz_costes(matriz, len1, len2, seq1, seq2, 1);
+        generar_imagen_matriz(matriz, len1, len2, seq1, seq2, 0);
+        // generar_imagen_matriz(matriz, len1, len2, seq1, seq2, 1);
     }
     
     Alineamiento resultado;
