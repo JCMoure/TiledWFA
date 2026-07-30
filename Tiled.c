@@ -160,11 +160,7 @@ void mostrar_matriz_costes(int matriz[MAX_LONG][MAX_LONG], int len1, int len2,
               best_possible_score += (j-i-(len2-len1))*GAP;
             else if ( add_best_possible_score && ((j-i) < (len2-len1)))
               best_possible_score += (i-j-(len1-len2))*GAP;
-            if ( j % 5 == 0 || i % 5 == 0 ) {           
-                printf("\033[1;31m %3d \033[0m", best_possible_score);
-            } else {
-                printf(" %3d ", best_possible_score);
-            }
+            printf(" %3d ", best_possible_score);
         }
         printf("\n");
         
@@ -228,13 +224,7 @@ void generar_archivo_matriz(int matriz[MAX_LONG][MAX_LONG], int len1, int len2,
                     best_possible_score += (i-j-(len1-len2))*GAP;
                 }
             }
-            
-            // Marcar celdas especiales con *
-            if (j % 5 == 0 || i % 5 == 0) {
-                fprintf(archivo, " *%3d*", best_possible_score);
-            } else {
-                fprintf(archivo, "  %3d ", best_possible_score);
-            }
+            fprintf(archivo, "  %3d ", best_possible_score);
         }
         fprintf(archivo, "\n");
         
